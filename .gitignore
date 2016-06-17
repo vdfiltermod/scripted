@@ -1,0 +1,6 @@
+obj
+*.ncb
+*.opt
+*.plg
+*.suo
+*.user

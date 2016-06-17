@@ -1,0 +1,70 @@
+//{{NO_DEPENDENCIES}}
+// Microsoft Visual C++ generated include file.
+// Used by resource.rc
+//
+
+#include "afxres.h"
+
+#define IDR_AVSVIEWER_MENU 1
+#define IDS_SHORTCUT_NOMENU 2
+#define IDR_SCI_INTERNAL 3
+#define IDR_SCI_EXTERNAL 4
+#define IDR_SCI_KEYWORDS 5
+#define IDI_AVSEDIT 6
+#define IDD_FIND 7
+#define IDS_INFO_AVSEDITOR_KEY 8
+#define IDS_INFO_AVSEDITOR_KEY_CAP 9
+#define IDS_INFO_AVSEDITOR_TOFF 10
+#define IDS_WARN_AVS_DISCARD_CHANGE 11
+#define IDS_WARN_AVS_DISCARD_CHANGE_CAP 12
+#define IDS_INFO_AVSEDITOR_TOFF_CAP 13
+#define IDS_INFO_AVS_VERSION_CAP 14
+#define IDS_ERR_AVS_NOFRAMESET 15
+#define IDS_ERR_CAPTION 16
+
+#define ID_AVS_FILE_SAVE 1
+#define ID_REFRESH 2
+#define ID_AVS_SAVE_OPEN 3
+#define ID_FILE_REVERT 4
+#define ID_FILE_EXIT 5
+#define ID_EDIT_FINDNEXT 6
+#define ID_EDIT_FINDPREV 7
+#define ID_AVS_INSERT_POS 8
+#define ID_AVS_INSERT_RANGE 9
+#define ID_AVS_INSERT_TRIM 10
+#define ID_AVS_INSERT_FRAMESET 11
+#define ID_AVS_INSERT_FILENAME 12
+#define ID_AVS_INSERT_CROP 13
+#define ID_AVS_COMMENT_LINES 14
+#define ID_AVS_UNCOMMENT_LINES 15
+#define ID_AVS_EDIT_LINE 16
+#define ID_AVS_SCRIPT_NONE 17
+#define ID_AVS_SCRIPT_AVS 18
+#define ID_AVS_SCRIPT_DECOMB 19
+#define ID_AVS_EDIT_OPTIONS 20
+#define ID_HELP_KEYS 21
+#define ID_HELP_TOFF 22
+#define ID_HELP_AVISYNTH 23
+#define ID_AVS_STARTCOMPLETE 24
+#define ID_EDIT_REFRESH 25
+#define ID_FIND_FINDWHAT 26
+#define ID_FIND_WHOLEWORD 27
+#define ID_FIND_MATCHCASE 28
+#define ID_FIND_REGEXP 29
+#define ID_FIND_WRAP 30
+#define ID_FIND_UNSLASH 31
+#define ID_FIND_DIRECTIONUP 32
+#define ID_FIND_DIRECTIONDOWN 33
+#define ID_FIND_MARKALL 34
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NO_MFC                     1
+#define _APS_NEXT_RESOURCE_VALUE        17
+#define _APS_NEXT_COMMAND_VALUE         35
+#define _APS_NEXT_CONTROL_VALUE         1
+#define _APS_NEXT_SYMED_VALUE           1
+#endif
+#endif

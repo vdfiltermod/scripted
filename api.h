@@ -1,0 +1,30 @@
+#ifndef api_header
+#define api_header
+
+#include <vd2/system/vdtypes.h>
+
+void VDGetFilename(wchar_t* buf, size_t n);
+void VDSetFilename(wchar_t* s);
+int64 VDRequestPos();
+void VDRequestRange(int64& r0, int64& r1);
+
+struct vd_basic_range {
+	int from;
+	int to;
+};
+
+struct vd_frameset {
+	int count;
+	vd_basic_range* ranges;	// must be assigned by the recipient
+};
+
+void VDRequestFrameset(vd_frameset& set, int max);
+
+struct vd_framesize {
+	int frametype;				// 0 = input / 1 = output
+	RECT frame;					// right and bottom hold width and height respectively
+};
+
+void VDRequestFrameSize(vd_framesize&);
+
+#endif
