@@ -93,6 +93,7 @@ WORD g_accelAVSCommand[VDM_ACCEL_AVS_COUNT] = {
 	ID_FILE_REVERT,
 	ID_FILE_EXIT,
 	ID_AVS_EDIT_LINE,
+	ID_AVS_EDIT_OPTIONS,
 	ID_HELP_TOFF,
 	ID_HELP_AVISYNTH,
 	ID_EDIT_FIND,
@@ -124,6 +125,7 @@ extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
 	{{{0,								0},{0, 0}}},							//ID_FILE_REVERT
 	{{{FVIRTKEY|FCONTROL,				VK_Q},{0, 0}}},							//ID_FILE_EXIT
 	{{{0,								0},{0, 0}}},							//ID_AVS_EDIT_LINE
+	{{{0,								0},{0, 0}}},							//ID_AVS_EDIT_OPTIONS
 	{{{0,								0},{0, 0}}},							//ID_HELP_TOFF
 	{{{0,								0},{0, 0}}},							//ID_HELP_AVISYNTH
 	{{{FVIRTKEY|FCONTROL,				VK_F},{0, 0}}},							//ID_EDIT_FIND

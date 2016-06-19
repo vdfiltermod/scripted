@@ -52,5 +52,6 @@ HWND AVSEdit(HWND, HWND, bool);
 bool ProcessDialogs(MSG& msg);
 void AVSViewerLoadSettings(HWND hwnd, const char* name);
 void AVSViewerSaveSettings(HWND hwnd, const char* name);
+void UpdatePreferences();
 
 #endif

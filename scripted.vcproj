@@ -365,6 +365,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\prefs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\prefs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Tdll.h"
 				>
 			</File>
@@ -391,6 +399,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\ico00002.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
@@ -399,6 +411,18 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\External.xpm"
+			>
+		</File>
+		<File
+			RelativePath=".\Internal.xpm"
+			>
+		</File>
+		<File
+			RelativePath=".\Keywords.xpm"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

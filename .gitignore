@@ -3,4 +3,5 @@ obj
 *.opt
 *.plg
 *.suo
+*.aps
 *.user

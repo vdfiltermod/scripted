@@ -59,12 +59,13 @@
 #include "SciLexer.h"
 //#include "avsconst.h"
 
+#include "afxres.h"
 #include "resource.h"
 //#include "oshelper.h"
 //#include "gui.h"
 //#include <vd2/system/Error.h>
 //#include <vd2/system/list.h>
-//#include "prefs.h"
+#include "prefs.h"
 
 #include "AVSViewer.h"
 #include "api.h"
@@ -87,21 +88,10 @@ extern HINSTANCE g_hInst;
 //extern Tdll	*g_dllAVSLexer;
 extern CAviSynth *g_dllAviSynth;
 HWND g_ScriptEditor = (HWND) -1;
+std::vector<class AVSEditor*> g_windows;
 std::vector<HWND> g_dialogs;
 //extern VDubModPreferences		g_VDMPrefs;
 
-
-struct VDubModPreferences {
-	char	m_bScriptEditorSingleInstance;
-	char	m_bScriptEditorAutoPopup;
-} g_VDMPrefs;
-
-struct VDubModPreferences2 {
-	VDubModPreferences	mModPrefs;
-	ACCELKEYTABLE_AVS	mKeytableAVS;
-	uint32				mAVSViewerFontSize;
-	std::string		mAVSViewerFontFace;
-} g_VDMPrefs2;
 
 void AVSViewerOpen(HWND hwnd);
 void AVSViewerChangePrefs(HWND parent);
@@ -204,6 +194,7 @@ public:
 
 	static LRESULT APIENTRY AVSEditorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) throw();
 	static LRESULT APIENTRY SubAVSEditorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) throw();
+	void UpdatePreferences();
 private:
 	void Init() throw();
 	void Open() throw();
@@ -545,7 +536,7 @@ void AVSEditor::Open() {
 	wsprintf(buf, "VirtualDubMod Script Editor - [%ls]", lpszFileName);
 	SetWindowText(hwnd, buf);
 
-	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs2.mAVSViewerFontSize, g_VDMPrefs2.mAVSViewerFontFace.c_str());
+	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
 	SendMessageSci(SCI_STYLECLEARALL);	// Copies global style to all others
 
 /*	if (!_stricmp(strrchr((lpszFileName), (int) '.'), ".avs")) {
@@ -559,7 +550,7 @@ void AVSEditor::Open() {
 
 void AVSEditor::SetScriptType(int type){
 	scriptType = type;
-	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs2.mAVSViewerFontSize, g_VDMPrefs2.mAVSViewerFontFace.c_str());
+	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
 	SendMessageSci(SCI_STYLECLEARALL);	// Copies global style to all others
 	switch(type) {
 		case SCRIPTTYPE_AVS: {
@@ -590,7 +581,7 @@ void AVSEditor::SetScriptType(int type){
 			const COLORREF darkRed = RGB(0x80,0,0);
 			const COLORREF darkViolet = RGB(0x80,0,0x80);
 	
-			SetAStyle(SCE_AVS_DEFAULT, black, white, g_VDMPrefs2.mAVSViewerFontSize, g_VDMPrefs2.mAVSViewerFontFace.c_str());
+			SetAStyle(SCE_AVS_DEFAULT, black, white, g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
 		
 			SetAStyle(SCE_AVS_NUMBER, darkBlue);
 
@@ -946,6 +937,10 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		}
 		break;
 
+	case ID_AVS_EDIT_OPTIONS:
+		ShowPrefs(hwnd);
+		break;
+
 	case ID_AVS_SCRIPT_NONE:
 		{
 			SetScriptType(SCRIPTTYPE_NONE);
@@ -1130,7 +1125,7 @@ void AVSEditor::CheckBracing() {
 void AVSEditor::DoCalltip() {
 	int pos = SendMessageSci(SCI_GETCURRENTPOS);
 	if(pos>0){
-		char ch = SendMessageSci(SCI_GETCHARAT, pos-1);
+		char ch = (char)SendMessageSci(SCI_GETCHARAT, pos-1);
 		if (ch=='(') {
 			if (!SendMessageSci(SCI_CALLTIPACTIVE)){
 				SendMessageSci(SCI_CALLTIPSHOW, 5, (LPARAM) "Test(a, b)\rTest2");
@@ -1163,12 +1158,14 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		cs = (CREATESTRUCT *) lParam;
 		pcd->hwndRef = (HWND) cs->lpCreateParams;
 		pcd->Init();
+		g_windows.push_back(pcd);
 		return 0;
 
 	case WM_SIZE:
 		return pcd->Handle_WM_SIZE(wParam, lParam);
 
 	case WM_DESTROY:
+		g_windows.erase(find(g_windows.begin(),g_windows.end(),pcd));
 		AVSViewerSaveSettings(hwnd,REG_WINDOW_MAIN);
 		delete pcd;
 		SetWindowLongPtr(hwnd, 0, 0);
@@ -1345,6 +1342,12 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 	return 0;
+}
+
+void AVSEditor::UpdatePreferences() {
+	SetMenu(hwnd, CreateAVSMenu());
+	SetScriptType(scriptType);
+	Handle_WM_SIZE(0, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1615,3 +1618,9 @@ bool ProcessDialogs(MSG& msg) {
 		if (IsDialogMessage(g_dialogs[i],&msg)) return true;
 	return false;
 }
+
+void UpdatePreferences() {
+	for(int i=0; i<(int)g_windows.size(); i++)
+		g_windows[i]->UpdatePreferences();
+}
+

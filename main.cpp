@@ -5,6 +5,7 @@
 #include "AVSViewer.h"
 #include "Tdll.h"
 #include "accel.h"
+#include "prefs.h"
 #include "api.h"
 
 HINSTANCE g_hInst;
@@ -43,8 +44,6 @@ int VDTextWToA(char *dst, int max_dst, const wchar_t *src, int max_src) {
 	return max_src<0 && len>0 ? len-1 : len;
 }
 */
-
-#define REG_KEY_APP "Software\\VirtualDub.org\\Script Editor"
 
 void VDUISaveWindowPlacementW32(HWND hwnd, const char *name) {
 	VDRegistryKey key(REG_KEY_APP"\\Window Placement");
@@ -145,6 +144,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     VDTextAToW(g_fileName,MAX_PATH,s);
   }
 
+  LoadPrefs();
 	InitDescriptions();
 	g_classAVS = RegisterAVSEditor();
 	InitAVSEditor();
