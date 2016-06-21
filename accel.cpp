@@ -64,6 +64,7 @@
 #include "stdafx.h"
 
 #include "resource.h"
+#include "afxres.h"
 #include "accel.h"
 //#include "gui.h"
 #include <string>
@@ -90,6 +91,7 @@ WORD g_accelAVSCommand[VDM_ACCEL_AVS_COUNT] = {
 	ID_EDIT_UNDO,
 	ID_AVS_SCRIPT_NONE,
 	ID_AVS_SCRIPT_AVS,
+	ID_AVS_SCRIPT_VPS,
 	ID_FILE_REVERT,
 	ID_FILE_EXIT,
 	ID_AVS_EDIT_LINE,
@@ -100,8 +102,8 @@ WORD g_accelAVSCommand[VDM_ACCEL_AVS_COUNT] = {
 	ID_EDIT_FINDNEXT,
 	ID_AVS_SCRIPT_DECOMB,
 	ID_AVS_INSERT_FILENAME,
-	ID_AVS_INSERT_CROP
-	,ID_EDIT_FINDPREV
+	//ID_AVS_INSERT_CROP,
+	ID_EDIT_FINDPREV
 };
 
 extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
@@ -122,6 +124,7 @@ extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
 	{{{FVIRTKEY|FCONTROL,				VK_Z},{0, 0}}},							//ID_EDIT_UNDO};
 	{{{FVIRTKEY|FCONTROL,				VK_0},{0, 0}}},							//ID_AVS_SCRIPT_NONE,
 	{{{FVIRTKEY|FCONTROL,				VK_1},{0, 0}}},							//ID_AVS_SCRIPT_AVS
+	{{{FVIRTKEY|FCONTROL,				VK_3},{0, 0}}},							//ID_AVS_SCRIPT_VPS
 	{{{0,								0},{0, 0}}},							//ID_FILE_REVERT
 	{{{FVIRTKEY|FCONTROL,				VK_Q},{0, 0}}},							//ID_FILE_EXIT
 	{{{0,								0},{0, 0}}},							//ID_AVS_EDIT_LINE
@@ -132,8 +135,8 @@ extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
 	{{{FVIRTKEY,						VK_F3},{0, 0}}},						//ID_EDIT_FINDNEXT
 	{{{FVIRTKEY|FCONTROL,				VK_2},{0, 0}}},							//ID_AVS_SCRIPT_DECOMB
 	{{{FVIRTKEY|FCONTROL|FSHIFT,		VK_O},{0, 0}}},							//ID_INSERT_FILENAME
-	{{{FVIRTKEY|FCONTROL|FSHIFT,		VK_C},{0, 0}}}							//ID_INSERT_CROP
-	,{{{FVIRTKEY|FSHIFT,					VK_F3},{0, 0}}},						//ID_EDIT_FINDPREV
+	//{{{FVIRTKEY|FCONTROL|FSHIFT,		VK_C},{0, 0}}},							//ID_INSERT_CROP
+	{{{FVIRTKEY|FSHIFT,					VK_F3},{0, 0}}},						//ID_EDIT_FINDPREV
 }};
 
 ACCELKEYTABLE_AVS g_accelAVS = g_accelAVSDefault;

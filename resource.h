@@ -42,10 +42,7 @@
 #define ID_AVS_UNCOMMENT_LINES          15
 #define IDS_ERR_CAPTION                 16
 #define ID_AVS_EDIT_LINE                16
-#define ID_AVS_SCRIPT_NONE              17
 #define IDD_OPTIONS                     17
-#define ID_AVS_SCRIPT_AVS               18
-#define ID_AVS_SCRIPT_DECOMB            19
 #define ID_AVS_EDIT_OPTIONS             20
 #define ID_HELP_KEYS                    21
 #define ID_HELP_TOFF                    22
@@ -61,6 +58,10 @@
 #define ID_FIND_DIRECTIONUP             32
 #define ID_FIND_DIRECTIONDOWN           33
 #define ID_FIND_MARKALL                 34
+#define ID_AVS_SCRIPT_NONE            1000
+#define ID_AVS_SCRIPT_AVS             1001
+#define ID_AVS_SCRIPT_DECOMB          1002
+#define ID_AVS_SCRIPT_VPS             1003
 
 // Next default values for new objects
 // 
@@ -68,7 +69,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        18
-#define _APS_NEXT_COMMAND_VALUE         35
+#define _APS_NEXT_COMMAND_VALUE         38
 #define _APS_NEXT_CONTROL_VALUE         10
 #define _APS_NEXT_SYMED_VALUE           1
 #endif

@@ -139,7 +139,7 @@ BEGIN
         MENUITEM "Insert &Trim With Range...",  ID_AVS_INSERT_TRIM
         MENUITEM "Import &Frameset as Trims...", ID_AVS_INSERT_FRAMESET
         MENUITEM "Insert Filename...",          ID_AVS_INSERT_FILENAME
-        MENUITEM "Insert Crop",                 ID_AVS_INSERT_CROP
+        MENUITEM "Insert Crop",                 ID_AVS_INSERT_CROP, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Comment Selected Lines...",  ID_AVS_COMMENT_LINES
         MENUITEM "U&ncomment Selected Lines...", ID_AVS_UNCOMMENT_LINES
@@ -150,6 +150,7 @@ BEGIN
             MENUITEM "&None...",                    ID_AVS_SCRIPT_NONE
             MENUITEM "&AviSynth...",                ID_AVS_SCRIPT_AVS, CHECKED
             MENUITEM "&Decomb...",                  ID_AVS_SCRIPT_DECOMB
+            MENUITEM "&VapourSynth...",             ID_AVS_SCRIPT_VPS
         END
         MENUITEM "&Options",                    ID_AVS_EDIT_OPTIONS
     END

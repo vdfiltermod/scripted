@@ -195,6 +195,8 @@ public:
 	static LRESULT APIENTRY AVSEditorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) throw();
 	static LRESULT APIENTRY SubAVSEditorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) throw();
 	void UpdatePreferences();
+	HWND GetHwnd(){ return hwnd; }
+
 private:
 	void Init() throw();
 	void Open() throw();
@@ -411,11 +413,11 @@ LRESULT AVSEditor::SubAVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 						PostMessage(pcd->hwndRef, WM_COMMAND, ID_EDIT_REFRESH, 0);
 					break;
 				}
-				if(wParam >= 0x30 /*VK_0*/ && wParam <= 0x31 /*VK_1*/)
+				/*if(wParam >= 0x30 / *VK_0* / && wParam <= 0x31 / *VK_1* /)
 				{
 					pcd->SetScriptType(wParam - 0x30);
 					break;
-				}
+				} */
 //				if (wParam == VK_SPACE)
 //				{
 //					pcd->SendMessageSci(SCI_AUTOCSHOW, 0, (int) avsInternalWords);
@@ -475,7 +477,7 @@ void AVSEditor::Init() {
 
 	wchar_t buf[MAX_PATH];
 	VDGetFilename(buf,MAX_PATH);
-	if (IsScriptType(buf,SCRIPTTYPE_AVS)) {
+	if (IsScriptType(buf,SCRIPTTYPE_AVS) || IsScriptType(buf,SCRIPTTYPE_VPS)) {
 		wcscpy(lpszFileName, buf);
 		Open();
 	}
@@ -513,7 +515,7 @@ void AVSEditor::UpdateLineNumbers() {
 }
 
 void AVSEditor::Open() {
-	char *lpszBuf;
+	unsigned char *lpszBuf;
 	FILE *f;
 	size_t n, r;
 
@@ -522,18 +524,24 @@ void AVSEditor::Open() {
 	fseek(f, 0, SEEK_END);
 	r = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	lpszBuf = (char *) malloc(r+1);
+	lpszBuf = (unsigned char *) malloc(r+1);
 	n=fread(lpszBuf, sizeof( char ), r, f);
 	*(lpszBuf+n) = (char) 0;
 	fclose(f);
 //    SendMessage(hwndView, WM_SETTEXT, 0, (LPARAM) lpszBuf);
 	SendMessageSci(SCI_CLEARALL, 0, 0);
+	if (lpszBuf[0]==0xef && lpszBuf[1]==0xbb && lpszBuf[2]==0xbf) {
+		SendMessageSci(SCI_SETCODEPAGE, SC_CP_UTF8);
+		SendMessageSci(SCI_SETTEXT, 0, (LPARAM) lpszBuf+3);
+	} else {
+		SendMessageSci(SCI_SETCODEPAGE, 0);
 		SendMessageSci(SCI_SETTEXT, 0, (LPARAM) lpszBuf);
+	}
 	free(lpszBuf);
 
 	char buf[512];
 
-	wsprintf(buf, "VirtualDubMod Script Editor - [%ls]", lpszFileName);
+	wsprintf(buf, "VirtualDub Script Editor - [%ls]", lpszFileName);
 	SetWindowText(hwnd, buf);
 
 	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
@@ -559,7 +567,7 @@ void AVSEditor::SetScriptType(int type){
 			}*/
 			//SendMessageSci(SCI_SETLEXERLANGUAGE, 0, (int) "avslex");
 			SendMessageSci(SCI_SETLEXER, SCLEX_AVS);
-			SendMessageSci(SCI_SETSTYLEBITS, 7);
+			//SendMessageSci(SCI_SETSTYLEBITS, 7);
 
 			SendMessageSci(SCI_CLEARREGISTEREDIMAGES);
 			SendMessageSci(SCI_REGISTERIMAGE, ICO_SCI_AVS_KEYWORDS, (LPARAM)imKeywords);
@@ -606,8 +614,8 @@ void AVSEditor::SetScriptType(int type){
 			//SetAStyle(SCE_AVS_FUZZY, red);
 			//SetAStyle(SCE_AVS_ERROR, white, red);
 
-			SetAStyle(34, white, black);  // Brace Highlight
-			SetAStyle(35, white, red);    // Brace Badlight
+			SetAStyle(34, white, black);
+			SetAStyle(35, white, red);
 
 			SendMessageSci(SCI_AUTOCSETIGNORECASE, TRUE);
 			SendMessageSci(SCI_AUTOCSETFILLUPS, 0, (LPARAM) " (,.");
@@ -620,11 +628,36 @@ void AVSEditor::SetScriptType(int type){
 		}
 		break;
 
+		case SCRIPTTYPE_VPS: {
+			scriptType = SCRIPTTYPE_VPS;
+			SendMessageSci(SCI_SETLEXER, SCLEX_PYTHON);
+			SendMessageSci(SCI_SETTABWIDTH, 4, 0);
+			const COLORREF black = RGB(0, 0, 0);
+			const COLORREF white = RGB(0xFF, 0xFF, 0xFF);
+			const COLORREF darkGreen = RGB(0, 0x80, 0);
+			const COLORREF darkBlue = RGB(0, 0, 0x80);
+			const COLORREF darkRed = RGB(0x80,0,0);
+			SetAStyle(SCE_P_DEFAULT, black, white, g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
+			SendMessageSci(SCI_STYLESETBOLD, SCE_P_DEFAULT, 1);
+			SetAStyle(SCE_P_WORD, darkGreen);
+			SendMessageSci(SCI_STYLESETBOLD, SCE_P_WORD, 1);
+
+			// Comment
+			SetAStyle(SCE_P_COMMENTBLOCK, RGB(0xAA,0xAA,0xAA));
+			SetAStyle(SCE_P_COMMENTLINE, RGB(0xAA,0xAA,0xAA));
+
+			SetAStyle(SCE_P_OPERATOR, darkBlue);
+			SetAStyle(SCE_P_STRING, darkRed);
+		}
+		break;
+
 		default: {
 			scriptType = SCRIPTTYPE_NONE;
 			SendMessageSci(SCI_SETLEXER, SCLEX_NULL);
 		}
 	}
+
+	SendMessageSci(SCI_COLOURISE, 0, -1);
 	UpdateStatus();
 }
 
@@ -666,6 +699,7 @@ bool AVSEditor::Commit() {
 	}
 
 //	s = SendMessage(hwndView, WM_GETTEXTLENGTH, 0, 0);
+	int cp = SendMessageSci(SCI_GETCODEPAGE);
 	s = SendMessageSci(SCI_GETTEXTLENGTH, 0, 0);
 	lpszBuf = (char *) malloc(s+1);
 //	gt.cb = s;
@@ -676,6 +710,8 @@ bool AVSEditor::Commit() {
 //	SendMessage(hwndView, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) lpszBuf);
 	SendMessageSci(SCI_GETTEXT, s+1, (LPARAM) lpszBuf);
 	f = _wfopen(lpszFileName, L"wb");
+	if (cp==SC_CP_UTF8)
+		fwrite("\xef\xbb\xbf", 1, 3, f);
 	fwrite(lpszBuf, sizeof( char ), s, f);
 	fclose(f);
 	free(lpszBuf);
@@ -770,19 +806,19 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			SendMessageSci(SCI_CLEARALL, 0, 0);
 //			SetScriptType(SCRIPTTYPE_NONE);
 			SetScriptType(SCRIPTTYPE_AVS);
-			SetWindowText(hwnd, "VirtualDubMod Script Editor");
+			SetWindowText(hwnd, "VirtualDub Script Editor");
 		}
 		break;
 	case ID_REFRESH:
 		{
 			if (Commit())
-				PostMessage(hwndRef, WM_COMMAND, ID_EDIT_REFRESH, 0);
+				VDSendReopen(this);
 		}
 		break;
 	case ID_AVS_SAVE_OPEN:
 		{
 			if (Commit()) {
-				VDSetFilename(lpszFileName);
+				VDSetFilename(lpszFileName,this);
 			}
 		}
 		break;
@@ -823,7 +859,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		{
 			int64 p = VDRequestPos();
 			char buf[50];
-			wsprintf(buf, "%d", p);
+			wsprintf(buf, "%I64d", p);
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) &buf);
 		}
 		break;
@@ -835,12 +871,12 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			VDRequestRange(r0,r1);
 			char buf[50];
 			if (scriptType == SCRIPTTYPE_NONE)
-				wsprintf(buf, "%d-%d", r0, r1 - 1); // -1 corrected by Fizick
+				wsprintf(buf, "%I64d-%I64d", r0, r1 - 1); // -1 corrected by Fizick
 			else
 				if (r0 == 0 && r1 == 1)
 					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", 0, -1);// special case of very first frame
 				else
-					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", r0, r1 -1);// -1 corrected by Fizick
+					wsprintf(buf, (trim)?"Trim(%I64d,%I64d)":"%I64d,%I64d", r0, r1 -1);// -1 corrected by Fizick
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) &buf);
 		}
 		break;
@@ -852,12 +888,12 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			VDRequestRange(r0,r1);
 			char buf[50];
 			if (scriptType == SCRIPTTYPE_NONE)
-				wsprintf(buf, "%d-%d", r0, r1 - 1); // -1 corrected by Fizick
+				wsprintf(buf, "%I64d-%I64d", r0, r1 - 1); // -1 corrected by Fizick
 			else
 				if (r0 == 0 && r1 == 1)
 					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", 0, -1);// special case of very first frame
 				else
-					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", r0, r1 -1);// -1 corrected by Fizick
+					wsprintf(buf, (trim)?"Trim(%I64d,%I64d)":"%I64d,%I64d", r0, r1 -1);// -1 corrected by Fizick
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) &buf);
 		}
 		break;
@@ -877,7 +913,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 				if (range.from == 0 && range.to == 1)
 					wsprintf(buf, "Trim(%d,%d)", 0, -1); // special case of one very first frame
 				else
-					wsprintf(buf, "Trim(%d,%d)", range.from, range.to - 1); // -1 corrected by Fizick
+					wsprintf(buf, "Trim(%I64d,%I64d)", range.from, range.to - 1); // -1 corrected by Fizick
 				if (i>0) buffer += " ++ ";
 				buffer += buf;
 			}
@@ -956,6 +992,12 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 	case ID_AVS_SCRIPT_DECOMB:
 		{
 			SetScriptType(SCRIPTTYPE_DECOMB);
+		}
+		break;
+
+	case ID_AVS_SCRIPT_VPS:
+		{
+			SetScriptType(SCRIPTTYPE_VPS);
 		}
 		break;
 
@@ -1197,12 +1239,12 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			dwEnableFlags = (!(pcd->lpszFileName[0] == 0) ? (MF_BYCOMMAND|MF_ENABLED) : (MF_BYCOMMAND|MF_GRAYED));
 			EnableMenuItem(hMenu,ID_AVS_INSERT_TRIM, dwEnableFlags);
 			EnableMenuItem(hMenu,ID_AVS_INSERT_FRAMESET, dwEnableFlags);
-			EnableMenuItem(hMenu,ID_AVS_INSERT_CROP, dwEnableFlags);
+			//EnableMenuItem(hMenu,ID_AVS_INSERT_CROP, dwEnableFlags);
 
 			dwEnableFlags = ((pcd->scriptType != SCRIPTTYPE_DECOMB) ? (MF_BYCOMMAND|MF_ENABLED) : (MF_BYCOMMAND|MF_GRAYED));
 			EnableMenuItem(hMenu,ID_AVS_INSERT_FILENAME, dwEnableFlags);
 
-			CheckMenuRadioItem(hMenu, ID_AVS_SCRIPT_NONE, ID_AVS_SCRIPT_DECOMB, ID_AVS_SCRIPT_NONE+pcd->scriptType, MF_BYCOMMAND);
+			CheckMenuRadioItem(hMenu, ID_AVS_SCRIPT_NONE, ID_AVS_SCRIPT_VPS, ID_AVS_SCRIPT_NONE+pcd->scriptType, MF_BYCOMMAND);
 
 		/*	EnableMenuItem(hMenu,ID_FILE_SAVE, dwEnableFlags);
 			EnableMenuItem(hMenu,ID_FILE_REVERT, dwEnableFlags);
@@ -1471,17 +1513,18 @@ void AVSEditor::FindNext(bool reverse) {
 	}
 }
 
-int GetScriptType(wchar_t *fn) {
-	wchar_t* p = wcsrchr(fn, '.');
+int GetScriptType(const wchar_t *fn) {
+	const wchar_t* p = wcsrchr(fn, '.');
 	if (!p) return SCRIPTTYPE_NONE;
 	if (!_wcsicmp(p, L".avs")) return SCRIPTTYPE_AVS;
 	if (!_wcsicmp(p, L".tel")) return SCRIPTTYPE_DECOMB;
 	if (!_wcsicmp(p, L".fd")) return SCRIPTTYPE_DECOMB;
 	if (!_wcsicmp(p, L".dec")) return SCRIPTTYPE_DECOMB;
+	if (!_wcsicmp(p, L".vpy")) return SCRIPTTYPE_VPS;
 	return SCRIPTTYPE_NONE;
 }
 
-bool IsScriptType(wchar_t *fn, int type) {
+bool IsScriptType(const wchar_t *fn, int type) {
 	return (GetScriptType(fn)==type);
 /*	switch (type) {
 	case SCRIPTTYPE_NONE:
@@ -1589,7 +1632,7 @@ HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
 	if (!g_VDMPrefs.m_bScriptEditorSingleInstance || (g_ScriptEditor == (HWND) -1)) {
 		HWND wnd = CreateWindow(
 			AVSEDITORCLASS,
-			"VirtualDubMod Script Editor",
+			"VirtualDub Script Editor",
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
@@ -1613,9 +1656,35 @@ HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
 	return g_ScriptEditor;
 }
 
+bool HandleFilename(HWND hwnd, const wchar_t* path) {
+	bool handle = false;
+	if (IsScriptType(path,SCRIPTTYPE_AVS)) handle = true;
+	if (IsScriptType(path,SCRIPTTYPE_VPS)) handle = true;
+	if (!handle) return false;
+	if (!g_VDMPrefs.m_bScriptEditorAutoPopup) return true;
+
+	if (g_VDMPrefs.m_bScriptEditorSingleInstance && g_ScriptEditor!=(HWND)-1)
+		SendMessage(g_ScriptEditor,WM_CLOSE,0,0);
+
+	AVSEdit(NULL, hwnd, false);
+	return true;
+}
+
 bool ProcessDialogs(MSG& msg) {
 	for(int i=0; i<(int)g_dialogs.size(); i++)
 		if (IsDialogMessage(g_dialogs[i],&msg)) return true;
+	return false;
+}
+
+bool ProcessHotkeys(MSG& msg) {
+	extern HACCEL g_hAccelAVS;
+	HWND hwnd = GetAncestor(msg.hwnd, GA_ROOT);
+	for(int i=0; i<(int)g_windows.size(); i++) {
+		AVSEditor* obj = g_windows[i];
+		if (obj->GetHwnd()==hwnd) {
+			if (TranslateAccelerator(hwnd, g_hAccelAVS, &msg)) return true;
+		}
+	}
 	return false;
 }
 
@@ -1624,3 +1693,8 @@ void UpdatePreferences() {
 		g_windows[i]->UpdatePreferences();
 }
 
+void HandleError(const char* s, void* userData)
+{
+	AVSEditor* obj = (AVSEditor*)userData;
+	MessageBox(obj->GetHwnd(), s, "File open error", MB_OK);
+}

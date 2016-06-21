@@ -4,13 +4,14 @@
 #include <vd2/system/vdtypes.h>
 
 void VDGetFilename(wchar_t* buf, size_t n);
-void VDSetFilename(wchar_t* s);
+void VDSetFilename(wchar_t* s, void* userData);
+void VDSendReopen(void* userData);
 int64 VDRequestPos();
 void VDRequestRange(int64& r0, int64& r1);
 
 struct vd_basic_range {
-	int from;
-	int to;
+	int64 from;
+	int64 to;
 };
 
 struct vd_frameset {

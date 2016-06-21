@@ -33,14 +33,15 @@ extern const char szAVSEditorClassName[];
 const int SCRIPTTYPE_NONE = 0;
 const int SCRIPTTYPE_AVS = 1;
 const int SCRIPTTYPE_DECOMB = 2;
-const int SCRIPTTYPE_MAX = SCRIPTTYPE_DECOMB;
+const int SCRIPTTYPE_VPS = 3;
+const int SCRIPTTYPE_MAX = SCRIPTTYPE_VPS;
 
-const char *const scripttypeName[SCRIPTTYPE_MAX+1] = {"None", "AviSynth", "Decomb"};
+const char *const scripttypeName[SCRIPTTYPE_MAX+1] = {"None", "AviSynth", "Decomb", "VapourSynth"};
 
 extern HWND g_ScriptEditor;
 
-bool IsScriptType(wchar_t *fn, int type);
-int GetScriptType(wchar_t *fn);
+bool IsScriptType(const wchar_t *fn, int type);
+int GetScriptType(const wchar_t *fn);
 
 
 void InitAVSEditor();
@@ -49,7 +50,10 @@ void DeinitAVSEditor();
 ATOM RegisterAVSEditor();
 
 HWND AVSEdit(HWND, HWND, bool);
+bool HandleFilename(HWND hwnd, const wchar_t* path);
 bool ProcessDialogs(MSG& msg);
+bool ProcessHotkeys(MSG& msg);
+void HandleError(const char* s, void* userData);
 void AVSViewerLoadSettings(HWND hwnd, const char* name);
 void AVSViewerSaveSettings(HWND hwnd, const char* name);
 void UpdatePreferences();
