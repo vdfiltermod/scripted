@@ -196,6 +196,9 @@ public:
 	static LRESULT APIENTRY SubAVSEditorWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) throw();
 	void UpdatePreferences();
 	HWND GetHwnd(){ return hwnd; }
+	bool CheckFilename(const wchar_t* path) {
+		return _wcsicmp(path,lpszFileName)==0;
+	}
 
 private:
 	void Init() throw();
@@ -1657,6 +1660,11 @@ HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
 }
 
 bool HandleFilename(HWND hwnd, const wchar_t* path) {
+	for(int i=0; i<(int)g_windows.size(); i++) {
+		AVSEditor* obj = g_windows[i];
+		if (obj->CheckFilename(path)) return true;
+	}
+
 	bool handle = false;
 	if (IsScriptType(path,SCRIPTTYPE_AVS)) handle = true;
 	if (IsScriptType(path,SCRIPTTYPE_VPS)) handle = true;
