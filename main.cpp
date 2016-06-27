@@ -334,7 +334,7 @@ VDXPluginInfo plugin_def={
 	1,
 	kVDXPluginType_Tool,
 	0,
-	kVDXPlugin_APIVersion,
+	11,
 	kVDXPlugin_APIVersion,
 	kVDXPlugin_ToolAPIVersion,
 	kVDXPlugin_ToolAPIVersion,
