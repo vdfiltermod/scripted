@@ -152,15 +152,8 @@ int guiMessageBox(HWND hwnd, UINT idText, UINT idCaption, UINT uType) {
 	return MessageBox(hwnd, text, caption, uType);
 }
 
-int guiMessageBoxF(HWND hwnd, LPCTSTR lpCaption, UINT uType, const char *format, ...) {
-	char buf[1024];
-	va_list val;
-
-	va_start(val,format);
-	vsprintf(buf, format, val);
-	va_end(val);
-
-	return MessageBox(hwnd, buf, lpCaption, uType);
+int guiMessageBoxText(HWND hwnd, LPCTSTR lpCaption, UINT uType, const char *text) {
+	return MessageBox(hwnd, text, lpCaption, uType);
 }
 
 class AVSEditor {
@@ -1078,7 +1071,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 				}
 				char caption[256];
 				LoadString(g_hInst, IDS_INFO_AVS_VERSION_CAP, (LPTSTR)caption, sizeof caption);
-				guiMessageBoxF(hwnd, caption, MB_OK|MB_ICONINFORMATION, "%s", v.c_str());
+				guiMessageBoxText(hwnd, caption, MB_OK|MB_ICONINFORMATION, v.c_str());
 			}
 		}
 		break;
