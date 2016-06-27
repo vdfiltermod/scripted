@@ -251,7 +251,7 @@ void VDRequestRange(int64& r0, int64& r1)
 	int64 end;
 	t->GetSelection(start,end);
 	r0 = start;
-	r1 = end+1;
+	r1 = end;
 }
 
 void VDRequestFrameset(vd_frameset& set, int max)
@@ -266,7 +266,7 @@ void VDRequestFrameset(vd_frameset& set, int max)
 		int64 end;
 		t->GetSubsetRange(i,start,end);
 		set.ranges[i].from = start;
-		set.ranges[i].to = end+1;
+		set.ranges[i].to = end;
 	}
 }
 
