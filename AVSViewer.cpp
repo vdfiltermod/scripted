@@ -212,7 +212,7 @@ private:
 
 	LRESULT Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw();
 	LRESULT Handle_WM_SIZE(WPARAM wParam, LPARAM lParam) throw();
-	LRESULT Handle_WM_NOTIFY(HWND hwndFrom, UINT code) throw();
+	LRESULT Handle_WM_NOTIFY(HWND hwndFrom, UINT code, NMHDR *phdr) throw();
 	LRESULT Handle_WM_DROPFILES(WPARAM wParam, LPARAM lParam);
 
 	sptr_t SendMessageSci(int Message, WPARAM wParam = 0, LPARAM lParam = 0) 
@@ -229,7 +229,9 @@ private:
 
 	void Find();
 	void FindNext(bool reverse);
+	void Jumpto();
 	static INT_PTR CALLBACK FindDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK JumpDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
 ////////////////////////////
@@ -434,14 +436,10 @@ LRESULT AVSEditor::SubAVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					return -1;
 				}
 			}*/
-			LRESULT tmp;
-			tmp = CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg,	wParam, lParam); 
-			pcd->UpdateStatus();
-			return tmp;
+			return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg, wParam, lParam); 
 
 		default:
-			return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg,
-				wParam, lParam); 
+			return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg, wParam, lParam); 
 	}
 
 	return 0;
@@ -846,6 +844,10 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		}
 		break;
 
+	case ID_EDIT_GOTO:
+		Jumpto();
+		break;
+
 	case ID_EDIT_FIND:
 		Find();
 		break;
@@ -1109,11 +1111,13 @@ LRESULT AVSEditor::Handle_WM_SIZE(WPARAM wParam, LPARAM lParam) throw() {
 	return 0;
 }
 
-LRESULT AVSEditor::Handle_WM_NOTIFY(HWND hwndFrom, UINT code) throw() {
+LRESULT AVSEditor::Handle_WM_NOTIFY(HWND hwndFrom, UINT code, NMHDR *phdr) throw() {
 	if (hwndFrom == hwndView) {
+		SCNotification* scn = (SCNotification*)phdr;
 		switch(code){
 		case SCN_UPDATEUI:
 			CheckBracing();
+			if(scn->updated & SC_UPDATE_SELECTION) UpdateStatus();
 			break;
 /*		case SCN_CHARADDED:
 			DoCalltip();
@@ -1261,7 +1265,7 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	case WM_NOTIFY:
 		{
 			NMHDR *phdr = (NMHDR *) lParam;
-			return pcd->Handle_WM_NOTIFY(phdr->hwndFrom, phdr->code);
+			return pcd->Handle_WM_NOTIFY(phdr->hwndFrom, phdr->code, phdr);
 //			if (phdr->code == WN_KEYDOWN) {
 //				MessageBox(pcd->hwnd, "Test", "TEST", MB_OK);
 //			}
@@ -1463,11 +1467,99 @@ INT_PTR CALLBACK AVSEditor::FindDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
+INT_PTR CALLBACK AVSEditor::JumpDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	AVSEditor* pcd = (AVSEditor*) GetWindowLongPtr(hwnd, DWLP_USER);
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		{
+			SetWindowLongPtr(hwnd, DWLP_USER, lParam);
+			pcd = (AVSEditor*) lParam;
+			g_dialogs.push_back(hwnd);
+			AVSViewerLoadSettings(hwnd,REG_WINDOW_JUMPTO);
+
+			char buf[64];
+			int64 frame = VDRequestPos();
+			wsprintf(buf, "%I64d", frame);
+			SetDlgItemText(hwnd, IDC_FRAMENUMBER, buf);
+			SetFocus(GetDlgItem(hwnd, IDC_FRAMENUMBER));
+			SendDlgItemMessage(hwnd, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
+
+			int c = pcd->SendMessageSci(SCI_GETCURRENTPOS, 0, 0);
+			int line = pcd->SendMessageSci(SCI_LINEFROMPOSITION, c, 0);
+			wsprintf(buf, "%d", line+1);
+			SetDlgItemText(hwnd, IDC_LINENUMBER, buf);
+
+			CheckDlgButton(hwnd, IDC_JUMPTOFRAME, BST_CHECKED);
+			CheckDlgButton(hwnd, IDC_JUMPTOLINE, BST_UNCHECKED);
+			EnableWindow(pcd->GetHwnd(),false);
+		}
+		return FALSE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDCANCEL:
+			EndDialog(hwnd, 1);
+			return TRUE;
+
+		case IDOK:
+			if (IsDlgButtonChecked(hwnd, IDC_JUMPTOFRAME)) {
+				char buf[64];
+				GetDlgItemText(hwnd,IDC_FRAMENUMBER,buf,64);
+				int64 frame;
+				if(sscanf(buf,"%I64d",&frame)==1)
+					VDSetPos(frame);
+			} else {
+				char buf[64];
+				GetDlgItemText(hwnd,IDC_LINENUMBER,buf,64);
+				int line;
+				if(sscanf(buf,"%d",&line)==1)
+					pcd->SendMessageSci(SCI_GOTOLINE, line-1);
+			}
+			EndDialog(hwnd, 0);
+			return TRUE;
+
+		case IDC_FRAMENUMBER:
+			if (HIWORD(wParam) == EN_CHANGE) {
+				CheckDlgButton(hwnd, IDC_JUMPTOFRAME, BST_CHECKED);
+				CheckDlgButton(hwnd, IDC_JUMPTOLINE, BST_UNCHECKED);
+			}
+			break;
+		case IDC_LINENUMBER:
+			if (HIWORD(wParam) == EN_CHANGE) {
+				CheckDlgButton(hwnd, IDC_JUMPTOFRAME, BST_UNCHECKED);
+				CheckDlgButton(hwnd, IDC_JUMPTOLINE, BST_CHECKED);
+			}
+			break;
+		case IDC_JUMPTOFRAME:
+			SetFocus(GetDlgItem(hwnd, IDC_FRAMENUMBER));
+			SendDlgItemMessage(hwnd, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
+			break;
+		case IDC_JUMPTOLINE:
+			SetFocus(GetDlgItem(hwnd, IDC_LINENUMBER));
+			SendDlgItemMessage(hwnd, IDC_LINENUMBER, EM_SETSEL, 0, -1);
+			break;
+		}
+		break;
+
+	case WM_DESTROY:
+		EnableWindow(pcd->GetHwnd(),true);
+		AVSViewerSaveSettings(hwnd,REG_WINDOW_JUMPTO);
+		g_dialogs.erase(find(g_dialogs.begin(),g_dialogs.end(),hwnd));
+		return TRUE;
+	}
+	return FALSE;
+}
+
 void AVSEditor::Find() {
 	if (hwndFind)
 		SetForegroundWindow(hwndFind);
 	else
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FIND), hwndView, FindDlgProc, (LPARAM) this);
+}
+
+void AVSEditor::Jumpto() {
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_JUMPTO), hwndView, JumpDlgProc, (LPARAM) this);
 }
 
 void AVSEditor::FindNext(bool reverse) {

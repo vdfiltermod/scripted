@@ -8,6 +8,7 @@ void VDSetFilename(wchar_t* s, void* userData);
 void VDSendReopen(void* userData);
 int64 VDRequestPos();
 void VDRequestRange(int64& r0, int64& r1);
+void VDSetPos(int64 pos);
 
 struct vd_basic_range {
 	int64 from;

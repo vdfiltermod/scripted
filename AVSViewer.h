@@ -25,6 +25,7 @@
 
 #define REG_WINDOW_MAIN "Main"
 #define REG_WINDOW_FIND "Find"
+#define REG_WINDOW_JUMPTO "Jumpto"
 
 #ifndef f_AVSVIEWER_CPP
 extern const char szAVSEditorClassName[];

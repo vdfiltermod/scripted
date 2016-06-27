@@ -78,7 +78,7 @@ typedef struct tagACCELKEYSTRANSFER {
 
 // Script Editor
 
-#define VDM_ACCEL_AVS_COUNT		29
+#define VDM_ACCEL_AVS_COUNT		30
 
 typedef struct tagACCELKEYTABLE_AVS {
 	ACCELKEYS command[VDM_ACCEL_AVS_COUNT];

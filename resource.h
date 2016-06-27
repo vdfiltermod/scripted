@@ -28,12 +28,16 @@
 #define IDS_INFO_AVSEDITOR_KEY_CAP      9
 #define ID_AVS_INSERT_RANGE             9
 #define IDC_FONT_TEXT                   9
+#define IDC_JUMPTOFRAME                 10
 #define IDS_INFO_AVSEDITOR_TOFF         10
 #define ID_AVS_INSERT_TRIM              10
+#define IDC_JUMPTOLINE                  11
 #define IDS_WARN_AVS_DISCARD_CHANGE     11
 #define ID_AVS_INSERT_FRAMESET          11
+#define IDC_FRAMENUMBER                 12
 #define IDS_WARN_AVS_DISCARD_CHANGE_CAP 12
 #define ID_AVS_INSERT_FILENAME          12
+#define IDC_LINENUMBER                  13
 #define IDS_INFO_AVSEDITOR_TOFF_CAP     13
 #define ID_AVS_INSERT_CROP              13
 #define IDS_INFO_AVS_VERSION_CAP        14
@@ -43,6 +47,7 @@
 #define IDS_ERR_CAPTION                 16
 #define ID_AVS_EDIT_LINE                16
 #define IDD_OPTIONS                     17
+#define IDD_JUMPTO                      18
 #define ID_AVS_EDIT_OPTIONS             20
 #define ID_HELP_KEYS                    21
 #define ID_HELP_TOFF                    22
@@ -58,19 +63,20 @@
 #define ID_FIND_DIRECTIONUP             32
 #define ID_FIND_DIRECTIONDOWN           33
 #define ID_FIND_MARKALL                 34
-#define ID_AVS_SCRIPT_NONE            1000
-#define ID_AVS_SCRIPT_AVS             1001
-#define ID_AVS_SCRIPT_DECOMB          1002
-#define ID_AVS_SCRIPT_VPS             1003
+#define ID_EDIT_GOTO                    38
+#define ID_AVS_SCRIPT_NONE              1000
+#define ID_AVS_SCRIPT_AVS               1001
+#define ID_AVS_SCRIPT_DECOMB            1002
+#define ID_AVS_SCRIPT_VPS               1003
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        18
-#define _APS_NEXT_COMMAND_VALUE         38
-#define _APS_NEXT_CONTROL_VALUE         10
+#define _APS_NEXT_RESOURCE_VALUE        19
+#define _APS_NEXT_COMMAND_VALUE         39
+#define _APS_NEXT_CONTROL_VALUE         14
 #define _APS_NEXT_SYMED_VALUE           1
 #endif
 #endif

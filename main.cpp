@@ -154,6 +154,10 @@ int64 VDRequestPos()
 	return 0;
 }
 
+void VDSetPos(int64 pos)
+{
+}
+
 void VDRequestRange(int64& r0, int64& r1)
 {
 	r0 = 0;
@@ -232,6 +236,12 @@ int64 VDRequestPos()
 {
 	IVDTimeline* t = g_context->mpCallbacks->GetTimeline();
 	return t->GetTimelinePos();
+}
+
+void VDSetPos(int64 pos)
+{
+	IVDTimeline* t = g_context->mpCallbacks->GetTimeline();
+	t->SetTimelinePos(pos);
 }
 
 void VDRequestRange(int64& r0, int64& r1)
