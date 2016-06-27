@@ -47,6 +47,7 @@
 #define IDS_ERR_CAPTION                 16
 #define ID_AVS_EDIT_LINE                16
 #define IDD_OPTIONS                     17
+#define IDS_ERR_AVS_NORANGE             17
 #define IDD_JUMPTO                      18
 #define ID_AVS_EDIT_OPTIONS             20
 #define ID_HELP_KEYS                    21

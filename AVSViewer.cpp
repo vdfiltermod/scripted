@@ -863,27 +863,17 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		break;
 
 	case ID_AVS_INSERT_RANGE:
-		{
-			bool trim = false;
-			int64 r0,r1;
-			VDRequestRange(r0,r1);
-			char buf[50];
-			if (scriptType == SCRIPTTYPE_NONE)
-				wsprintf(buf, "%I64d-%I64d", r0, r1 - 1); // -1 corrected by Fizick
-			else
-				if (r0 == 0 && r1 == 1)
-					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", 0, -1);// special case of very first frame
-				else
-					wsprintf(buf, (trim)?"Trim(%I64d,%I64d)":"%I64d,%I64d", r0, r1 -1);// -1 corrected by Fizick
-			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) &buf);
-		}
-		break;
-
 	case ID_AVS_INSERT_TRIM:
 		{
-			bool trim = true;
+			bool trim = false;
+			if(LOWORD(wParam)==ID_AVS_INSERT_TRIM) trim = true;
 			int64 r0,r1;
 			VDRequestRange(r0,r1);
+			if (r1-r0<=0) {
+				guiMessageBox(hwnd, IDS_ERR_AVS_NORANGE, IDS_ERR_CAPTION, MB_OK|MB_ICONERROR);
+				break;
+			}
+
 			char buf[50];
 			if (scriptType == SCRIPTTYPE_NONE)
 				wsprintf(buf, "%I64d-%I64d", r0, r1 - 1); // -1 corrected by Fizick
@@ -902,6 +892,10 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			vd_basic_range rbuf[1024];
 			set.ranges = rbuf;
 			VDRequestFrameset(set,1024);
+			if (set.count==0) {
+				guiMessageBox(hwnd, IDS_ERR_AVS_NOFRAMESET, IDS_ERR_CAPTION, MB_OK|MB_ICONERROR);
+				break;
+			}
 
 			string buffer;
 			char buf[50];
@@ -916,7 +910,6 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 				buffer += buf;
 			}
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) buffer.c_str());
-			if (set.count==0) guiMessageBox(hwnd, IDS_ERR_AVS_NOFRAMESET, IDS_ERR_CAPTION, MB_OK|MB_ICONERROR);
 		}
 		break;
 
