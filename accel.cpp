@@ -64,7 +64,6 @@
 #include "stdafx.h"
 
 #include "resource.h"
-#include "afxres.h"
 #include "accel.h"
 //#include "gui.h"
 #include <string>

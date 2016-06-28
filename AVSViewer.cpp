@@ -59,7 +59,6 @@
 #include "SciLexer.h"
 //#include "avsconst.h"
 
-#include "afxres.h"
 #include "resource.h"
 //#include "oshelper.h"
 //#include "gui.h"

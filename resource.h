@@ -65,6 +65,11 @@
 #define ID_FIND_DIRECTIONDOWN           33
 #define ID_FIND_MARKALL                 34
 #define ID_EDIT_GOTO                    38
+#define ID_FILE_NEW                     39
+#define ID_FILE_OPEN                    40
+#define ID_EDIT_UNDO                    41
+#define ID_EDIT_REDO                    42
+#define ID_EDIT_FIND                    43
 #define ID_AVS_SCRIPT_NONE              1000
 #define ID_AVS_SCRIPT_AVS               1001
 #define ID_AVS_SCRIPT_DECOMB            1002
@@ -76,7 +81,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        19
-#define _APS_NEXT_COMMAND_VALUE         39
+#define _APS_NEXT_COMMAND_VALUE         44
 #define _APS_NEXT_CONTROL_VALUE         14
 #define _APS_NEXT_SYMED_VALUE           1
 #endif
