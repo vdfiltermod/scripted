@@ -14,6 +14,8 @@ Global
 		debug plugin|x64 = debug plugin|x64
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		release plugin|Win32 = release plugin|Win32
+		release plugin|x64 = release plugin|x64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
@@ -26,6 +28,10 @@ Global
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Debug|Win32.Build.0 = Debug|Win32
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Debug|x64.ActiveCfg = Debug|x64
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Debug|x64.Build.0 = Debug|x64
+		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.release plugin|Win32.ActiveCfg = release plugin|Win32
+		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.release plugin|Win32.Build.0 = release plugin|Win32
+		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.release plugin|x64.ActiveCfg = release plugin|x64
+		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.release plugin|x64.Build.0 = release plugin|x64
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Release|Win32.ActiveCfg = Release|Win32
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Release|Win32.Build.0 = Release|Win32
 		{6C41CD68-89D4-4EA4-8CEC-D3F70A8EB278}.Release|x64.ActiveCfg = Release|x64
@@ -38,6 +44,10 @@ Global
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Debug|Win32.Build.0 = Debug|Win32
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Debug|x64.ActiveCfg = Debug|x64
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Debug|x64.Build.0 = Debug|x64
+		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.release plugin|Win32.ActiveCfg = Release|Win32
+		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.release plugin|Win32.Build.0 = Release|Win32
+		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.release plugin|x64.ActiveCfg = Release|x64
+		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.release plugin|x64.Build.0 = Release|x64
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Release|Win32.ActiveCfg = Release|Win32
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Release|Win32.Build.0 = Release|Win32
 		{FA7A9B8E-EE0F-4EE1-ADCF-949B679B9551}.Release|x64.ActiveCfg = Release|x64

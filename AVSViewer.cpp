@@ -159,7 +159,7 @@ class AVSEditor {
 private:
 	const HWND	hwnd;
 	HWND	hwndStatus;
-	HWND	hwndRef;
+	//HWND	hwndRef;
 	wchar_t	lpszFileName[MAX_PATH];
 	HFONT	hfont;
 	void*	coloredit;
@@ -393,11 +393,6 @@ LRESULT AVSEditor::SubAVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	AVSEditor *pcd = (AVSEditor *)GetWindowLongPtr(
 		(HWND)GetWindowLongPtr(hwnd, GWLP_HWNDPARENT), 0);
 
-	if(!pcd)
-	{
-		return 0;
-	}
-
 	switch (msg)
 	{
 		case WM_KEYDOWN:
@@ -407,34 +402,13 @@ LRESULT AVSEditor::SubAVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				{
 					pcd->RemoveLineCommentInRange(wParam - VK_F1);
 					if (pcd->Commit())
-						PostMessage(pcd->hwndRef, WM_COMMAND, ID_EDIT_REFRESH, 0);
-					break;
+						VDSendReopen(pcd);
 				}
-				/*if(wParam >= 0x30 / *VK_0* / && wParam <= 0x31 / *VK_1* /)
-				{
-					pcd->SetScriptType(wParam - 0x30);
-					break;
-				} */
-//				if (wParam == VK_SPACE)
-//				{
-//					pcd->SendMessageSci(SCI_AUTOCSHOW, 0, (int) avsInternalWords);
-//				}
 			}
-/*			if (GetKeyState(VK_SHIFT) < 0)
-			{
-				if (wParam == VK_SPACE)
-				{
-					pcd->SendMessageSci(SCI_AUTOCSHOW, 0, (int) avsInternalWords);
-					return -1;
-				}
-			}*/
-			return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg, wParam, lParam); 
-
-		default:
-			return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg, wParam, lParam); 
+			break;
 	}
 
-	return 0;
+	return CallWindowProc(pcd->OldAVSViewWinProc, hwnd, msg, wParam, lParam); 
 }
 
 // <----- Toff
@@ -1190,7 +1164,7 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	case WM_CREATE:
 		CREATESTRUCT *cs;
 		cs = (CREATESTRUCT *) lParam;
-		pcd->hwndRef = (HWND) cs->lpCreateParams;
+		//pcd->hwndRef = (HWND) cs->lpCreateParams;
 		pcd->Init();
 		g_windows.push_back(pcd);
 		return 0;
@@ -1199,6 +1173,8 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		return pcd->Handle_WM_SIZE(wParam, lParam);
 
 	case WM_DESTROY:
+		SetWindowLongPtr(pcd->hwndView, GWLP_WNDPROC, (LPARAM)pcd->OldAVSViewWinProc);	
+
 		g_windows.erase(find(g_windows.begin(),g_windows.end(),pcd));
 		AVSViewerSaveSettings(hwnd,REG_WINDOW_MAIN);
 		delete pcd;
@@ -1782,4 +1758,23 @@ void HandleError(const char* s, void* userData)
 {
 	AVSEditor* obj = (AVSEditor*)userData;
 	MessageBox(obj->GetHwnd(), s, "File open error", MB_OK);
+}
+
+void AttachWindows(HWND parent)
+{
+	for(int i=0; i<(int)g_windows.size(); i++) {
+		AVSEditor* obj = g_windows[i];
+		HWND hwnd = obj->GetHwnd();
+		//obj->hwndRef = parent;
+		ShowWindow(hwnd,SW_SHOWNOACTIVATE);
+	}
+}
+
+void DetachWindows(HWND parent)
+{
+	for(int i=0; i<(int)g_windows.size(); i++) {
+		AVSEditor* obj = g_windows[i];
+		HWND hwnd = obj->GetHwnd();
+		ShowWindow(hwnd,SW_HIDE);
+	}
 }

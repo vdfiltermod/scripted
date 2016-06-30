@@ -303,6 +303,12 @@ class ToolDriver: public vdxunknown<IVDXTool> {
 	virtual bool VDXAPIENTRY HandleFileOpen(const wchar_t* fileName, const wchar_t* driverName, VDXHWND hwndParent) {
 		return HandleFilename((HWND)hwndParent,fileName);
 	}
+	virtual void VDXAPIENTRY Attach(VDXHWND hwndParent) {
+		AttachWindows((HWND)hwndParent);
+	}
+	virtual void VDXAPIENTRY Detach(VDXHWND hwndParent) {
+		DetachWindows((HWND)hwndParent);
+	}
 };
 
 bool VDXAPIENTRY create(const VDXToolContext *pContext, IVDXTool **pp)

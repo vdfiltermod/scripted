@@ -57,6 +57,8 @@ bool ProcessHotkeys(MSG& msg);
 void HandleError(const char* s, void* userData);
 void AVSViewerLoadSettings(HWND hwnd, const char* name);
 void AVSViewerSaveSettings(HWND hwnd, const char* name);
+void AttachWindows(HWND parent);
+void DetachWindows(HWND parent);
 void UpdatePreferences();
 
 #endif
