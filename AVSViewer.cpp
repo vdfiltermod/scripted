@@ -643,7 +643,7 @@ bool AVSEditor::Commit() {
 
 		memset(&ofn, 0, sizeof ofn);
 
-		ofn.lStructSize			= 0x4c;	//sizeof(OPENFILENAME); stupid beta include files
+		ofn.lStructSize			= sizeof(OPENFILENAME);
 		ofn.hwndOwner			= hwnd;
 		ofn.lpstrFilter			= "All files (*.*)\0*.*\0";
 		ofn.lpstrCustomFilter	= NULL;
@@ -747,7 +747,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 
 			memset(&ofn, 0, sizeof ofn);
 
-			ofn.lStructSize			= 0x4c;	//sizeof(OPENFILENAME); stupid beta include files
+			ofn.lStructSize			= sizeof(OPENFILENAME);
 			ofn.hwndOwner			= hwnd;
 			ofn.lpstrFilter			= "All files (*.*)\0*.*\0";
 			ofn.lpstrCustomFilter	= NULL;
@@ -896,7 +896,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 
 			memset(&ofn, 0, sizeof ofn);
 
-			ofn.lStructSize			= 0x4c;	//sizeof(OPENFILENAME); stupid beta include files
+			ofn.lStructSize			= sizeof(OPENFILENAME);
 			ofn.hwndOwner			= hwnd;
 			ofn.lpstrFilter			= "All files (*.*)\0*.*\0";
 			ofn.lpstrCustomFilter	= NULL;

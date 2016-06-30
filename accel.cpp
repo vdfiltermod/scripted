@@ -279,11 +279,9 @@ HMENU CreateAVSMenu() {
 	HMENU menu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_AVSVIEWER_MENU));
 	char buffer[255];
 	char buf[255];
-	MENUITEMINFO mi;
-	mi.cbSize = WIN95_MENUITEMINFO_SIZE;
+	MENUITEMINFO mi = {sizeof(MENUITEMINFO)};
 	mi.fMask = MIIM_TYPE;
-	mi.dwTypeData = (char *) &buffer;
-	buffer[0] = 0;
+	mi.dwTypeData = buffer;
 
 	for(int i=0; i<VDM_ACCEL_AVS_COUNT; i++) {
 		if (g_accelAVS.command[i].altkey[0].key>0) {
