@@ -9,6 +9,7 @@
 #define IDR_SCI_INTERNAL                3
 #define ID_AVS_SAVE_OPEN                3
 #define IDC_SINGLEINSTANCE              3
+#define IDS_ERR_AVS_NOTFOUND            3
 #define IDR_SCI_EXTERNAL                4
 #define ID_FILE_REVERT                  4
 #define IDC_AUTOPOPUP                   4

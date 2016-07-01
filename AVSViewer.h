@@ -45,10 +45,8 @@ bool IsScriptType(const wchar_t *fn, int type);
 int GetScriptType(const wchar_t *fn);
 
 
-void InitAVSEditor();
-void DeinitAVSEditor();
-
-ATOM RegisterAVSEditor();
+void LoadAVSEditorIcons();
+ATOM RegisterAVSEditorClass();
 
 HWND AVSEdit(HWND, HWND, bool);
 bool HandleFilename(HWND hwnd, const wchar_t* path);

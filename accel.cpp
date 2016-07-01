@@ -142,7 +142,7 @@ extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
 
 ACCELKEYTABLE_AVS g_accelAVS = g_accelAVSDefault;
 ACCEL g_accelAVSAccelerator[VDM_ACCEL_AVS_COUNT*2];
-char g_accelAVSDescription[VDM_ACCEL_AVS_COUNT][255];
+//char g_accelAVSDescription[VDM_ACCEL_AVS_COUNT][255];
 
 // General
 
@@ -156,6 +156,7 @@ int GetOffsetFromIDAVS(WORD id) {
 	return -1;
 }
 
+/*
 void HandleMenuAVS(std::string str, HMENU mnu) {
 	std::string locstr = str;
 	char buf[255];
@@ -211,6 +212,7 @@ void InitDescriptions() {
 		}
 	}
 }
+*/
 
 HACCEL CreateAVSAccelerators() {
 	ACCEL *avsAccel = (LPACCEL) &g_accelAVSAccelerator;
@@ -266,7 +268,7 @@ void GetKeyString(BYTE fVirt, WORD key, char *buffer, int len) {
 		if (LoadString(g_hInst, 5000+key, (char *) &buf, 255)>0)
 			strncat(buffer, buf, len-strlen(buffer));
 	} else {
-		b[0]=key;
+		b[0] = (char)key;
 		if (key!=0) strcat(buffer, b);
 	}
 }

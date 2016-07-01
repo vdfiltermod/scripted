@@ -41,14 +41,6 @@
 #include <shellapi.h>
 #include <tchar.h>
 
-//#include <Richedit.h>
-// 08-11-2002, Cyrius : added a test for RichEdit 2.0 features
-// With my VC98 version I have version 2.1 but it doesn't contain SETTEXTEX, ST_SELECTION and EM_SETTEXTEX
-// Platform SDK seems needed
-//#if (!defined(_RICHEDIT_VER) | (_RICHEDIT_VER < 0x0200) | !defined(EM_SETTEXTEX))
-//  #error You need Richedit.h (Platform SDK) v2 or higher
-//#endif
-
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -418,8 +410,6 @@ void AVSEditor::Init() {
 
 	hwndView = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
-//		szAVSViewerClassName,
-//		RICHEDIT_CLASS,
 		"Scintilla",
 		"",
 		WS_VISIBLE|WS_CHILD|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE,
@@ -450,9 +440,7 @@ void AVSEditor::Init() {
 	}
 
 	// Toff ----->
-	// Subclass richedit
-	OldAVSViewWinProc = (WNDPROC)SetWindowLongPtr(hwndView, GWLP_WNDPROC,
-		(LPARAM)SubAVSEditorWndProc);	
+	OldAVSViewWinProc = (WNDPROC)SetWindowLongPtr(hwndView, GWLP_WNDPROC,	(LPARAM)SubAVSEditorWndProc);
 	// <----- Toff
 
 	//if (lpszFileName[0] != 0) Open();
@@ -1038,6 +1026,8 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 				char caption[256];
 				LoadString(g_hInst, IDS_INFO_AVS_VERSION_CAP, (LPTSTR)caption, sizeof caption);
 				guiMessageBoxText(hwnd, caption, MB_OK|MB_ICONINFORMATION, v.c_str());
+			} else {
+				guiMessageBox(hwnd, IDS_ERR_AVS_NOTFOUND, IDS_INFO_AVS_VERSION_CAP, MB_OK|MB_ICONSTOP);
 			}
 		}
 		break;
@@ -1582,18 +1572,9 @@ int GetScriptType(const wchar_t *fn) {
 
 bool IsScriptType(const wchar_t *fn, int type) {
 	return (GetScriptType(fn)==type);
-/*	switch (type) {
-	case SCRIPTTYPE_NONE:
-		return true;
-	case SCRIPTTYPE_AVS:
-		return !_stricmp(strrchr(fn, (int) '.'), ".avs");
-	case SCRIPTTYPE_DECOMB:
-		return (!_stricmp(strrchr(fn, (int) '.'), ".tel"))||(!_stricmp(strrchr(fn, (int) '.'), ".fd"))||(!_stricmp(strrchr(fn, (int) '.'), ".dec"));
-	}
-	return false;*/
 }
 
-void InitAVSEditor() {
+void LoadAVSEditorIcons() {
 	HRSRC hrsrc;
 	HGLOBAL hGlob;
 
@@ -1606,67 +1587,9 @@ void InitAVSEditor() {
 	hrsrc = FindResource(g_hInst,(LPCTSTR)IDR_SCI_EXTERNAL,_T("STUFF"));
 	hGlob = LoadResource(g_hInst,hrsrc);
 	imExternal = LockResource(hGlob);
-/* 
-	char *temp = new char[max(sizeof(avsInternalWords),(g_dllAviSynth->externalCommands?strlen(g_dllAviSynth->externalCommands):0))];
-	avsWords = new char[sizeof(avsInternalWords)+sizeof(avsBasicWords)+(g_dllAviSynth->externalCommands?strlen(g_dllAviSynth->externalCommands):0)+2];
-	char *token;
-	string *c;
-	set<string,less_nocase> AVSToken;
+}
 
-	strcpy(temp, avsInternalWords);
-	token = strtok(temp, " ");
-	while (token != NULL) {
-		c = new string;
-		*c = token;
-		AVSToken.insert(*c);
-		token = strtok(NULL, " ");
-		delete c;
-	}
-
-	if (g_dllAviSynth->externalCommands) {
-		strcpy(temp, g_dllAviSynth->externalCommands);
-		token = strtok(temp, " ");
-		while (token != NULL) {
-			c = new string;
-			*c = token;
-			AVSToken.insert(*c);
-			token = strtok(NULL, " ");
-			delete c;
-		}
-	}
-
-	strcpy(temp, avsBasicWords);
-	token = strtok(temp, " ");
-	while (token != NULL) {
-		c = new string;
-		*c = token;
-		AVSToken.insert(*c);
-		token = strtok(NULL, " ");
-		delete c;
-	}
-
-	set<string,less_nocase>::iterator walkit;
-	walkit = AVSToken.begin();
-	strcpy(avsWords, walkit->c_str());
-	for(walkit++; walkit!=AVSToken.end();walkit++) {
-		strcat(avsWords, " ");
-		strcat(avsWords, walkit->c_str());
-	}
-
-	AVSToken.clear();
-	delete [] temp;
- */}
-
-void DeinitAVSEditor() {
-/*	if (avsExternalWords) {
-		delete [] avsExternalWords;
-		avsExternalWords = NULL;
-	}
-	delete [] avsWords;
-*/}
-
-
-ATOM RegisterAVSEditor() {
+ATOM RegisterAVSEditorClass() {
 	WNDCLASS wc1;
 
 	wc1.style			= 0;
@@ -1681,7 +1604,7 @@ ATOM RegisterAVSEditor() {
 	wc1.lpszMenuName	= MAKEINTRESOURCE(IDR_AVSVIEWER_MENU);
 	wc1.lpszClassName	= AVSEDITORCLASS;	
 
-	return RegisterClass(&wc1) /*&& LoadLibrary("Riched20.dll")*/;
+	return RegisterClass(&wc1);
 
 }
 HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {

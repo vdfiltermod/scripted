@@ -12,40 +12,11 @@
 
 HINSTANCE g_hInst;
 ATOM		g_classAVS;
-Tdll		*g_dllRichedit;
 CAviSynth	*g_dllAviSynth;
 HACCEL		g_hAccelAVS;
-extern const ACCELKEYTABLE_AVS g_accelAVSDefault;
-extern char g_accelKEYDescription[256][255];
-extern char g_accelAVSDescription[VDM_ACCEL_AVS_COUNT][255];
-extern WORD g_accelKEYKeycode[256];
-extern WORD g_accelAVSCommand[VDM_ACCEL_AVS_COUNT];
-
 
 extern "C" bool Scintilla_RegisterClasses(void *hInstance);
 extern "C" bool Scintilla_ReleaseResources();
-
-/*
-int VDTextAToW(wchar_t *dst, int max_dst, const char *src, int max_src) {
-	*dst = 0;
-
-	int len = MultiByteToWideChar(CP_ACP, 0, src, max_src, dst, max_dst);
-
-	// remove null terminator if source was null-terminated (source
-	// length was provided)
-	return max_src<0 && len>0 ? len-1 : len;
-}
-
-int VDTextWToA(char *dst, int max_dst, const wchar_t *src, int max_src) {
-	*dst = 0;
-
-	int len = WideCharToMultiByte(CP_ACP, 0, src, max_src, dst, max_dst, NULL, NULL);
-
-	// remove null terminator if source was null-terminated (source
-	// length was provided)
-	return max_src<0 && len>0 ? len-1 : len;
-}
-*/
 
 void VDUISaveWindowPlacementW32(HWND hwnd, const char *name) {
 	VDRegistryKey key(REG_KEY_APP"\\Window Placement");
@@ -86,13 +57,6 @@ void AVSViewerSaveSettings(HWND hwnd, const char* name) {
 	VDUISaveWindowPlacementW32(hwnd, name);
 }
 
-/*bool TranslateAcceleratorAvs(HWND hwnd, MSG& msg) {
-	if (hwnd != g_hWnd)
-		if (GetClassLong(hwnd, GCW_ATOM) == g_classAVS)
-			if (TranslateAccelerator(hwnd, g_hAccelAVS, &msg)) return true;
-	return false;
-}*/
-
 void VDRequestFrameSize(vd_framesize& frame)
 {
 	frame.frametype = 0;
@@ -103,12 +67,10 @@ void VDRequestFrameSize(vd_framesize& frame)
 bool initialize()
 {
 	LoadPrefs();
-	InitDescriptions();
-	g_classAVS = RegisterAVSEditor();
-	InitAVSEditor();
+	//InitDescriptions();
+	g_classAVS = RegisterAVSEditorClass();
+	LoadAVSEditorIcons();
 	Scintilla_RegisterClasses(g_hInst);
-	g_dllRichedit = new Tdll("Riched20.dll", NULL);
-	if (!g_dllRichedit->ok) return false;
 	g_dllAviSynth = new CAviSynth("avisynth.dll");
 	g_hAccelAVS = CreateAVSAccelerators();
 	return true;
@@ -116,10 +78,8 @@ bool initialize()
 
 void uninitialize()
 {
-	DeinitAVSEditor();
 	Scintilla_ReleaseResources();
 	delete g_dllAviSynth;
-	delete g_dllRichedit;
 	DestroyAcceleratorTable(g_hAccelAVS);
 }
 
@@ -271,6 +231,10 @@ void VDRequestFrameset(vd_frameset& set, int max)
 }
 
 class ToolDriver: public vdxunknown<IVDXTool> {
+	virtual ~ToolDriver() {
+		uninitialize();
+	}
+
 	virtual bool VDXAPIENTRY GetMenuInfo(int id, char* name, int name_size, bool* enabled) {
 		if (id==0) {
 			strcpy(name,"Script Editor");
@@ -313,6 +277,8 @@ class ToolDriver: public vdxunknown<IVDXTool> {
 
 bool VDXAPIENTRY create(const VDXToolContext *pContext, IVDXTool **pp)
 {
+	if(!initialize()) return false;
+
 	ToolDriver *p = new ToolDriver();
 	if(!p) return false;
 	*pp = p;
@@ -361,11 +327,9 @@ BOOLEAN WINAPI DllMain( IN HINSTANCE hDllHandle, IN DWORD nReason, IN LPVOID Res
 	switch ( nReason ){
 	case DLL_PROCESS_ATTACH:
 		g_hInst = hDllHandle;
-		initialize();
 		return true;
 
 	case DLL_PROCESS_DETACH:
-		if(Reserved==0) uninitialize();
 		return true;
 	}
 
