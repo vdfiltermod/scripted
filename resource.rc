@@ -110,6 +110,7 @@ BEGIN
     LTEXT           "Font",IDC_FONT_TEXT,68,95,207,8
     LTEXT           "Allow only one open script editor window.",IDC_SINGLEINSTANCE_TIP,22,20,134,8
     LTEXT           "Automatically popup script editor when an AviSynth script is loaded into the main window. In single instance mode if there is already an open script editor window, the newly opened script is loaded into that.",IDC_AUTOPOPUP_TIP,22,51,253,30
+    CONTROL         "Wrap Lines",IDC_WRAPLINES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,116,51,10
 END
 
 IDD_JUMPTO DIALOGEX 0, 0, 164, 68
@@ -171,6 +172,7 @@ BEGIN
             MENUITEM "&AviSynth...",                ID_AVS_SCRIPT_AVS, CHECKED
             MENUITEM "&Decomb...",                  ID_AVS_SCRIPT_DECOMB
             MENUITEM "&VapourSynth...",             ID_AVS_SCRIPT_VPS
+            MENUITEM "VirtualDub...",               ID_AVS_SCRIPT_VDSCRIPT
         END
         MENUITEM "&Options",                    ID_AVS_EDIT_OPTIONS
     END

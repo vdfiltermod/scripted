@@ -87,6 +87,9 @@ std::vector<HWND> g_dialogs;
 void AVSViewerOpen(HWND hwnd);
 void AVSViewerChangePrefs(HWND parent);
 
+void init_avs();
+void clear_avs();
+
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -429,8 +432,8 @@ void AVSEditor::Init() {
 
 //	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), 11, "Courier New");
 //	SendMessageSci(SCI_STYLECLEARALL);	// Copies global style to all others
-//	SetScriptType(SCRIPTTYPE_NONE);
-	SetScriptType(SCRIPTTYPE_AVS);
+	SetScriptType(SCRIPTTYPE_NONE);
+//	SetScriptType(SCRIPTTYPE_AVS);
 
 	wchar_t buf[MAX_PATH];
 	VDGetFilename(buf,MAX_PATH);
@@ -499,6 +502,7 @@ void AVSEditor::Open() {
 	wsprintf(buf, "VirtualDub Script Editor - [%ls]", lpszFileName);
 	SetWindowText(hwnd, buf);
 
+	SendMessageSci(SCI_SETWRAPMODE, g_VDMPrefs.m_bWrapLines ? SC_WRAP_WORD:SC_WRAP_NONE);
 	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
 	SendMessageSci(SCI_STYLECLEARALL);	// Copies global style to all others
 
@@ -513,10 +517,12 @@ void AVSEditor::Open() {
 
 void AVSEditor::SetScriptType(int type){
 	scriptType = type;
+	SendMessageSci(SCI_SETWRAPMODE, g_VDMPrefs.m_bWrapLines ? SC_WRAP_WORD:SC_WRAP_NONE);
 	SetAStyle(STYLE_DEFAULT, RGB(0,0,0), RGB(0xff,0xff,0xff), g_VDMPrefs.mAVSViewerFontSize, g_VDMPrefs.mAVSViewerFontFace.c_str());
 	SendMessageSci(SCI_STYLECLEARALL);	// Copies global style to all others
 	switch(type) {
 		case SCRIPTTYPE_AVS: {
+			init_avs();
 			/*if (!g_dllAVSLexer->ok) {
 				guiMessageBox(hwnd, IDS_ERR_NO_AVSLEXER, IDS_ERR_NO_AVSLEXER_CAP, MB_OK|MB_ICONERROR);
 			}*/
@@ -603,6 +609,12 @@ void AVSEditor::SetScriptType(int type){
 
 			SetAStyle(SCE_P_OPERATOR, darkBlue);
 			SetAStyle(SCE_P_STRING, darkRed);
+		}
+		break;
+
+		case SCRIPTTYPE_VDSCRIPT: {
+			scriptType = SCRIPTTYPE_VDSCRIPT;
+			SendMessageSci(SCI_SETLEXER, SCLEX_NULL);
 		}
 		break;
 
@@ -836,13 +848,27 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			}
 
 			char buf[50];
-			if (scriptType == SCRIPTTYPE_NONE)
-				wsprintf(buf, "%I64d-%I64d", r0, r1 - 1); // -1 corrected by Fizick
-			else
+			if (scriptType == SCRIPTTYPE_NONE) {
+				wsprintf(buf, "%I64d-%I64d", r0, r1);
+			}
+			if (scriptType == SCRIPTTYPE_VDSCRIPT) {
+				if (trim) 
+					wsprintf(buf, "VirtualDub.subset.AddRange(%I64d,%I64d);", r0, r1);
+				else
+					wsprintf(buf, "%I64d,%I64d", r0, r1);
+			}
+			if (scriptType == SCRIPTTYPE_AVS || scriptType == SCRIPTTYPE_DECOMB) {
 				if (r0 == 0 && r1 == 1)
 					wsprintf(buf, (trim)?"Trim(%d,%d)":"%d,%d", 0, -1);// special case of very first frame
 				else
-					wsprintf(buf, (trim)?"Trim(%I64d,%I64d)":"%I64d,%I64d", r0, r1 -1);// -1 corrected by Fizick
+					wsprintf(buf, (trim)?"Trim(%I64d,%I64d)":"%I64d,%I64d", r0, r1 -1);
+			}
+			if (scriptType == SCRIPTTYPE_VPS) {
+				if (r1 == r0+1)
+					wsprintf(buf, (trim)?"clip[%d]":"%d", r0);
+				else
+					wsprintf(buf, (trim)?"clip[%I64d:%I64d]":"%I64d:%I64d", r0, r1);
+			}
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) &buf);
 		}
 		break;
@@ -862,12 +888,33 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			char buf[50];
 			for(int i = 0; i<set.count; i++) {
 				vd_basic_range range = set.ranges[i];
-				// Fixed bug with TRIM position for Avisynth - code changed by Fizick:
-				if (range.from == 0 && range.to == 1)
-					wsprintf(buf, "Trim(%d,%d)", 0, -1); // special case of one very first frame
-				else
-					wsprintf(buf, "Trim(%I64d,%I64d)", range.from, range.to - 1); // -1 corrected by Fizick
-				if (i>0) buffer += " ++ ";
+
+				if (scriptType == SCRIPTTYPE_NONE) {
+					wsprintf(buf, "Trim(%I64d,%I64d)", range.from, range.to);
+					if (i>0) buffer += " + ";
+				}
+
+				if (scriptType == SCRIPTTYPE_AVS || scriptType == SCRIPTTYPE_DECOMB) {
+					if (range.from == 0 && range.to == 1)
+						wsprintf(buf, "Trim(%d,%d)", 0, -1); // special case of one very first frame
+					else
+						wsprintf(buf, "Trim(%I64d,%I64d)", range.from, range.to - 1);
+					if (i>0) buffer += " ++ ";
+				}
+
+				if (scriptType == SCRIPTTYPE_VPS) {
+					if (range.to==range.from+1)
+						wsprintf(buf, "clip[%I64d]", range.from);
+					else
+						wsprintf(buf, "clip[%I64d:%I64d]", range.from, range.to);
+					if (i>0) buffer += " + ";
+				}
+
+				if (scriptType == SCRIPTTYPE_VDSCRIPT) {
+					wsprintf(buf, "VirtualDub.subset.AddRange(%I64d,%I64d);", range.from, range.to);
+					if (i>0) buffer += "\r\n";
+				}
+
 				buffer += buf;
 			}
 			SendMessage(hwndView, SCI_REPLACESEL, 0, (LPARAM) buffer.c_str());
@@ -953,6 +1000,12 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		}
 		break;
 
+	case ID_AVS_SCRIPT_VDSCRIPT:
+		{
+			SetScriptType(SCRIPTTYPE_VDSCRIPT);
+		}
+		break;
+
 	case ID_AVS_COMMENT_LINES:
 		{
 			int first = SendMessageSci(SCI_GETSELECTIONSTART);
@@ -1016,6 +1069,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 
 	case ID_HELP_AVISYNTH:
 		{
+			init_avs();
 			if (g_dllAviSynth->ok) {
 				string v;
 				v = g_dllAviSynth->Version;
@@ -1170,6 +1224,7 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		delete pcd;
 		SetWindowLongPtr(hwnd, 0, 0);
 		g_ScriptEditor = (HWND) -1;
+		if (g_windows.empty()) clear_avs();
 		break;
 
 	case WM_SETFOCUS:
@@ -1202,7 +1257,7 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			dwEnableFlags = ((pcd->scriptType != SCRIPTTYPE_DECOMB) ? (MF_BYCOMMAND|MF_ENABLED) : (MF_BYCOMMAND|MF_GRAYED));
 			EnableMenuItem(hMenu,ID_AVS_INSERT_FILENAME, dwEnableFlags);
 
-			CheckMenuRadioItem(hMenu, ID_AVS_SCRIPT_NONE, ID_AVS_SCRIPT_VPS, ID_AVS_SCRIPT_NONE+pcd->scriptType, MF_BYCOMMAND);
+			CheckMenuRadioItem(hMenu, ID_AVS_SCRIPT_NONE, ID_AVS_SCRIPT_VDSCRIPT, ID_AVS_SCRIPT_NONE+pcd->scriptType, MF_BYCOMMAND);
 
 		/*	EnableMenuItem(hMenu,ID_FILE_SAVE, dwEnableFlags);
 			EnableMenuItem(hMenu,ID_FILE_REVERT, dwEnableFlags);
@@ -1567,6 +1622,9 @@ int GetScriptType(const wchar_t *fn) {
 	if (!_wcsicmp(p, L".fd")) return SCRIPTTYPE_DECOMB;
 	if (!_wcsicmp(p, L".dec")) return SCRIPTTYPE_DECOMB;
 	if (!_wcsicmp(p, L".vpy")) return SCRIPTTYPE_VPS;
+	if (!_wcsicmp(p, L".vdscript")) return SCRIPTTYPE_VDSCRIPT;
+	if (!_wcsicmp(p, L".vdproject")) return SCRIPTTYPE_VDSCRIPT;
+	if (!_wcsicmp(p, L".jobs")) return SCRIPTTYPE_VDSCRIPT;
 	return SCRIPTTYPE_NONE;
 }
 

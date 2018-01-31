@@ -19,6 +19,7 @@
 #define IDI_AVSEDIT                     6
 #define ID_EDIT_FINDNEXT                6
 #define IDC_SAVE                        6
+#define IDC_WRAPLINES                   6
 #define IDD_FIND                        7
 #define ID_EDIT_FINDPREV                7
 #define IDS_SINGLEINSTANCE_TIP          7
@@ -75,6 +76,7 @@
 #define ID_AVS_SCRIPT_AVS               1001
 #define ID_AVS_SCRIPT_DECOMB            1002
 #define ID_AVS_SCRIPT_VPS               1003
+#define ID_AVS_SCRIPT_VDSCRIPT          1004
 
 // Next default values for new objects
 // 

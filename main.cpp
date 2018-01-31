@@ -5,7 +5,6 @@
 #include <vd2/VDXFrame/Unknown.h>
 #include "CAviSynth.h"
 #include "AVSViewer.h"
-#include "Tdll.h"
 #include "accel.h"
 #include "prefs.h"
 #include "api.h"
@@ -64,14 +63,26 @@ void VDRequestFrameSize(vd_framesize& frame)
 	frame.frame = r;
 }
 
+void init_avs()
+{
+	if(g_dllAviSynth) return;
+	g_dllAviSynth = new CAviSynth("avisynth.dll");
+}
+
+void clear_avs()
+{
+	delete g_dllAviSynth;
+	g_dllAviSynth = 0;
+}
+
 bool initialize()
 {
 	LoadPrefs();
 	//InitDescriptions();
 	g_classAVS = RegisterAVSEditorClass();
 	LoadAVSEditorIcons();
+	//init_avs();
 	Scintilla_RegisterClasses(g_hInst);
-	g_dllAviSynth = new CAviSynth("avisynth.dll");
 	g_hAccelAVS = CreateAVSAccelerators();
 	return true;
 }
@@ -79,7 +90,7 @@ bool initialize()
 void uninitialize()
 {
 	Scintilla_ReleaseResources();
-	delete g_dllAviSynth;
+	clear_avs();
 	DestroyAcceleratorTable(g_hAccelAVS);
 }
 

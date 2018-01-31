@@ -35,9 +35,10 @@ const int SCRIPTTYPE_NONE = 0;
 const int SCRIPTTYPE_AVS = 1;
 const int SCRIPTTYPE_DECOMB = 2;
 const int SCRIPTTYPE_VPS = 3;
-const int SCRIPTTYPE_MAX = SCRIPTTYPE_VPS;
+const int SCRIPTTYPE_VDSCRIPT = 4;
+const int SCRIPTTYPE_MAX = SCRIPTTYPE_VDSCRIPT;
 
-const char *const scripttypeName[SCRIPTTYPE_MAX+1] = {"None", "AviSynth", "Decomb", "VapourSynth"};
+const char *const scripttypeName[SCRIPTTYPE_MAX+1] = {"None", "AviSynth", "Decomb", "VapourSynth", "VirtualDub"};
 
 extern HWND g_ScriptEditor;
 

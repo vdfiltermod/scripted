@@ -91,6 +91,7 @@ WORD g_accelAVSCommand[VDM_ACCEL_AVS_COUNT] = {
 	ID_AVS_SCRIPT_NONE,
 	ID_AVS_SCRIPT_AVS,
 	ID_AVS_SCRIPT_VPS,
+	ID_AVS_SCRIPT_VDSCRIPT,
 	ID_FILE_REVERT,
 	ID_FILE_EXIT,
 	ID_AVS_EDIT_LINE,
@@ -125,6 +126,7 @@ extern const ACCELKEYTABLE_AVS g_accelAVSDefault = {{
 	{{{FVIRTKEY|FCONTROL,				VK_0},{0, 0}}},							//ID_AVS_SCRIPT_NONE,
 	{{{FVIRTKEY|FCONTROL,				VK_1},{0, 0}}},							//ID_AVS_SCRIPT_AVS
 	{{{FVIRTKEY|FCONTROL,				VK_3},{0, 0}}},							//ID_AVS_SCRIPT_VPS
+	{{{FVIRTKEY|FCONTROL,				VK_4},{0, 0}}},							//ID_AVS_SCRIPT_VPS
 	{{{0,								0},{0, 0}}},							//ID_FILE_REVERT
 	{{{FVIRTKEY|FCONTROL,				VK_Q},{0, 0}}},							//ID_FILE_EXIT
 	{{{0,								0},{0, 0}}},							//ID_AVS_EDIT_LINE

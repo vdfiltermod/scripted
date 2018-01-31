@@ -8,6 +8,7 @@
 struct VDubModPreferences2 {
 	char	m_bScriptEditorSingleInstance;
 	char	m_bScriptEditorAutoPopup;
+	char	m_bWrapLines;
 	uint32				mAVSViewerFontSize;
 	VDStringA			mAVSViewerFontFace;
 } extern g_VDMPrefs;

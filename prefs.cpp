@@ -12,6 +12,7 @@ void LoadPrefs() {
 
 	g_VDMPrefs.m_bScriptEditorSingleInstance = key.getInt("singleInstance", 1);
 	g_VDMPrefs.m_bScriptEditorAutoPopup = key.getInt("autoPopup", 0);
+	g_VDMPrefs.m_bWrapLines = key.getInt("wrapLines", 0);
 
 	g_VDMPrefs.mAVSViewerFontSize = key.getInt("fontsize", 14);
 
@@ -24,6 +25,7 @@ void SavePrefs() {
 
 	key.setInt("singleInstance", g_VDMPrefs.m_bScriptEditorSingleInstance);
 	key.setInt("autoPopup", g_VDMPrefs.m_bScriptEditorAutoPopup);
+	key.setInt("wrapLines", g_VDMPrefs.m_bWrapLines);
 
 	key.setInt("fontsize", g_VDMPrefs.mAVSViewerFontSize);
 	key.setString("fontface", g_VDMPrefs.mAVSViewerFontFace.c_str());
@@ -50,6 +52,7 @@ INT_PTR CALLBACK VDDialogPrefsScriptEditor::DlgProc(HWND hdlg, UINT msg, WPARAM 
 		obj->mhwnd = hdlg;
 		SendDlgItemMessage(hdlg, IDC_SINGLEINSTANCE, BM_SETCHECK, obj->mPrefs.m_bScriptEditorSingleInstance ? BST_CHECKED:BST_UNCHECKED, 0);
 		SendDlgItemMessage(hdlg, IDC_AUTOPOPUP, BM_SETCHECK, obj->mPrefs.m_bScriptEditorAutoPopup ? BST_CHECKED:BST_UNCHECKED, 0);
+		SendDlgItemMessage(hdlg, IDC_WRAPLINES, BM_SETCHECK, obj->mPrefs.m_bWrapLines ? BST_CHECKED:BST_UNCHECKED, 0);
 		obj->SetFontLabel();
 		break;
 	case WM_COMMAND:
@@ -57,6 +60,7 @@ INT_PTR CALLBACK VDDialogPrefsScriptEditor::DlgProc(HWND hdlg, UINT msg, WPARAM 
 			case IDOK:
 				obj->mPrefs.m_bScriptEditorSingleInstance = SendDlgItemMessage(hdlg, IDC_SINGLEINSTANCE, BM_GETCHECK, 0, 0)==BST_CHECKED;
 				obj->mPrefs.m_bScriptEditorAutoPopup = SendDlgItemMessage(hdlg, IDC_AUTOPOPUP, BM_GETCHECK, 0, 0)==BST_CHECKED;
+				obj->mPrefs.m_bWrapLines = SendDlgItemMessage(hdlg, IDC_WRAPLINES, BM_GETCHECK, 0, 0)==BST_CHECKED;
 				EndDialog(hdlg, 0);
 				return TRUE;
 			case IDCANCEL:
