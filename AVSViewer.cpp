@@ -499,7 +499,7 @@ void AVSEditor::Open() {
 
 	char buf[512];
 
-	wsprintf(buf, "VirtualDub Script Editor - [%ls]", lpszFileName);
+	wsprintf(buf, "VirtualDub2 Script Editor - [%ls]", lpszFileName);
 	SetWindowText(hwnd, buf);
 
 	SendMessageSci(SCI_SETWRAPMODE, g_VDMPrefs.m_bWrapLines ? SC_WRAP_WORD:SC_WRAP_NONE);
@@ -773,7 +773,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			SendMessageSci(SCI_CLEARALL, 0, 0);
 //			SetScriptType(SCRIPTTYPE_NONE);
 			SetScriptType(SCRIPTTYPE_AVS);
-			SetWindowText(hwnd, "VirtualDub Script Editor");
+			SetWindowText(hwnd, "VirtualDub2 Script Editor");
 		}
 		break;
 	case ID_REFRESH:
@@ -1669,7 +1669,7 @@ HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
 	if (!g_VDMPrefs.m_bScriptEditorSingleInstance || (g_ScriptEditor == (HWND) -1)) {
 		HWND wnd = CreateWindow(
 			AVSEDITORCLASS,
-			"VirtualDub Script Editor",
+			"VirtualDub2 Script Editor",
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
