@@ -150,6 +150,8 @@ int guiMessageBoxText(HWND hwnd, LPCTSTR lpCaption, UINT uType, const char *text
 	return MessageBox(hwnd, text, lpCaption, uType);
 }
 
+const int WM_DEFER_ERROR = WM_USER+1;
+
 class AVSEditor {
 private:
 	const HWND	hwnd;
@@ -186,10 +188,11 @@ public:
 	bool CheckFilename(const wchar_t* path) {
 		return _wcsicmp(path,lpszFileName)==0;
 	}
+	void Open(const wchar_t* path);
+	void HandleError(const char* s, int line);
 
 private:
 	void Init() throw();
-	void Open() throw();
 	bool Commit() throw();
 
 	void SetStatus(const char *format, ...) throw();
@@ -397,7 +400,7 @@ LRESULT AVSEditor::SubAVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 				{
 					pcd->RemoveLineCommentInRange(wParam - VK_F1);
 					if (pcd->Commit())
-						VDSendReopen(pcd);
+						VDSendReopen(pcd->lpszFileName, pcd);
 				}
 			}
 			break;
@@ -435,13 +438,6 @@ void AVSEditor::Init() {
 	SetScriptType(SCRIPTTYPE_NONE);
 //	SetScriptType(SCRIPTTYPE_AVS);
 
-	wchar_t buf[MAX_PATH];
-	VDGetFilename(buf,MAX_PATH);
-	if (IsScriptType(buf,SCRIPTTYPE_AVS) || IsScriptType(buf,SCRIPTTYPE_VPS)) {
-		wcscpy(lpszFileName, buf);
-		Open();
-	}
-
 	// Toff ----->
 	OldAVSViewWinProc = (WNDPROC)SetWindowLongPtr(hwndView, GWLP_WNDPROC,	(LPARAM)SubAVSEditorWndProc);
 	// <----- Toff
@@ -472,7 +468,9 @@ void AVSEditor::UpdateLineNumbers() {
 	SendMessageSci(SCI_SETMARGINWIDTHN, 1, bLineNumbers?pixelWidth:0);
 }
 
-void AVSEditor::Open() {
+void AVSEditor::Open(const wchar_t* path) {
+	if(path) wcscpy(lpszFileName, path);
+
 	unsigned char *lpszBuf;
 	FILE *f;
 	size_t n, r;
@@ -512,7 +510,12 @@ void AVSEditor::Open() {
 		SetScriptType(SCRIPTTYPE_NONE);
 	}*/
 	SetScriptType(GetScriptType(lpszFileName));
+}
 
+void AVSEditor::HandleError(const char* s, int line){
+	SendMessageSci(SCI_GOTOLINE, line-1);
+	char* s1 = _strdup(s);
+	PostMessage(hwnd,WM_DEFER_ERROR,0,(LPARAM)s1);
 }
 
 void AVSEditor::SetScriptType(int type){
@@ -740,16 +743,16 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		break;
 	case ID_FILE_OPEN:
 		{
-			char szName[MAX_PATH];
-			OPENFILENAME ofn;
+			wchar_t szName[MAX_PATH];
+			OPENFILENAMEW ofn;
 
 			szName[0] = 0;
 
 			memset(&ofn, 0, sizeof ofn);
 
-			ofn.lStructSize			= sizeof(OPENFILENAME);
+			ofn.lStructSize			= sizeof(OPENFILENAMEW);
 			ofn.hwndOwner			= hwnd;
-			ofn.lpstrFilter			= "All files (*.*)\0*.*\0";
+			ofn.lpstrFilter			= L"All files (*.*)\0*.*\0";
 			ofn.lpstrCustomFilter	= NULL;
 			ofn.nFilterIndex		= 1;
 			ofn.lpstrFile			= szName;
@@ -760,10 +763,10 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 			ofn.Flags				= OFN_EXPLORER | OFN_ENABLESIZING;
 			ofn.lpstrDefExt			= NULL;
 
-			if (GetOpenFileName(&ofn)) {
-				VDTextAToW(lpszFileName, MAX_PATH, szName, MAX_PATH);
+			if (GetOpenFileNameW(&ofn)) {
+				//VDTextAToW(lpszFileName, MAX_PATH, szName, MAX_PATH);
 				//wcscpy(lpszFileName, VDTextAToW(szName).c_str());
-				Open();
+				Open(szName);
 			}
 		}
 		break;
@@ -779,7 +782,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 	case ID_REFRESH:
 		{
 			if (Commit())
-				VDSendReopen(this);
+				VDSendReopen(lpszFileName, this);
 		}
 		break;
 	case ID_AVS_SAVE_OPEN:
@@ -794,7 +797,7 @@ LRESULT AVSEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) throw() {
 		break;
 	case ID_FILE_REVERT:
 		if (IDOK==guiMessageBox(hwnd, IDS_WARN_AVS_DISCARD_CHANGE, IDS_WARN_AVS_DISCARD_CHANGE_CAP, MB_OKCANCEL)) {
-			Open();
+			Open(0);
 		}
 		break;
 
@@ -1259,6 +1262,9 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 			CheckMenuRadioItem(hMenu, ID_AVS_SCRIPT_NONE, ID_AVS_SCRIPT_VDSCRIPT, ID_AVS_SCRIPT_NONE+pcd->scriptType, MF_BYCOMMAND);
 
+			dwEnableFlags = (((pcd->scriptType == SCRIPTTYPE_AVS) || (pcd->scriptType == SCRIPTTYPE_VPS)) ? (MF_BYCOMMAND|MF_ENABLED) : (MF_BYCOMMAND|MF_GRAYED));
+			EnableMenuItem(hMenu, ID_AVS_SAVE_OPEN, dwEnableFlags);
+
 		/*	EnableMenuItem(hMenu,ID_FILE_SAVE, dwEnableFlags);
 			EnableMenuItem(hMenu,ID_FILE_REVERT, dwEnableFlags);
 			EnableMenuItem(hMenu,ID_EDIT_TRUNCATE, dwEnableFlags);
@@ -1381,6 +1387,14 @@ LRESULT APIENTRY AVSEditor::AVSEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		return 0;
 		*/
+
+	case WM_DEFER_ERROR:
+		{
+			char* s = (char*)lParam;
+			MessageBox(hwnd, s, "File open error", MB_OK);
+			free(s);
+		}
+		return 0;
 
 	case WM_DROPFILES:
 		return pcd->Handle_WM_DROPFILES(wParam, lParam);
@@ -1663,9 +1677,9 @@ ATOM RegisterAVSEditorClass() {
 	wc1.lpszClassName	= AVSEDITORCLASS;	
 
 	return RegisterClass(&wc1);
-
 }
-HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
+
+AVSEditor* CreateEditor(HWND hwndParent, HWND refWND, bool bringfront) {
 	if (!g_VDMPrefs.m_bScriptEditorSingleInstance || (g_ScriptEditor == (HWND) -1)) {
 		HWND wnd = CreateWindow(
 			AVSEDITORCLASS,
@@ -1689,8 +1703,21 @@ HWND AVSEdit(HWND hwndParent, HWND refWND, bool bringfront) {
 	(bringfront)?BringWindowToTop(g_ScriptEditor):SetWindowPos(refWND, g_ScriptEditor, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
 
 	SetFocus(g_ScriptEditor);
-	
-	return g_ScriptEditor;
+
+	AVSEditor* pcd = (AVSEditor *)GetWindowLongPtr(g_ScriptEditor, 0);
+
+	return pcd;
+}
+
+bool OpenCurrentFile(HWND parent) {
+	AVSEditor* obj = CreateEditor(NULL, (HWND)parent, true);
+	wchar_t buf[MAX_PATH];
+	VDGetFilename(buf,MAX_PATH);
+	if (IsScriptType(buf,SCRIPTTYPE_AVS) || IsScriptType(buf,SCRIPTTYPE_VPS)) {
+		obj->Open(buf);
+		return true;
+	}
+	return false;
 }
 
 bool HandleFilename(HWND hwnd, const wchar_t* path) {
@@ -1708,7 +1735,33 @@ bool HandleFilename(HWND hwnd, const wchar_t* path) {
 	if (g_VDMPrefs.m_bScriptEditorSingleInstance && g_ScriptEditor!=(HWND)-1)
 		SendMessage(g_ScriptEditor,WM_CLOSE,0,0);
 
-	AVSEdit(NULL, hwnd, false);
+	AVSEditor* obj = CreateEditor(NULL, hwnd, false);
+	obj->Open(path);
+	return true;
+}
+
+bool HandleFileOpenError(HWND hwnd, const wchar_t* path, const char* s, int line) {
+	for(int i=0; i<(int)g_windows.size(); i++) {
+		AVSEditor* obj = g_windows[i];
+		if (obj->CheckFilename(path)){
+			obj->Open(path);
+			obj->HandleError(s,line);
+			return true;
+		}
+	}
+
+	bool handle = false;
+	if (IsScriptType(path,SCRIPTTYPE_AVS)) handle = true;
+	if (IsScriptType(path,SCRIPTTYPE_VPS)) handle = true;
+	if (IsScriptType(path,SCRIPTTYPE_VDSCRIPT)) handle = true;
+	if (!handle) return false;
+
+	if (g_VDMPrefs.m_bScriptEditorSingleInstance && g_ScriptEditor!=(HWND)-1)
+		SendMessage(g_ScriptEditor,WM_CLOSE,0,0);
+
+	AVSEditor* obj = CreateEditor(NULL, hwnd, false);
+	obj->Open(path);
+	obj->HandleError(s,line);
 	return true;
 }
 

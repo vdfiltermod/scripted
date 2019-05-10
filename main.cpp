@@ -115,7 +115,7 @@ void VDSetFilename(wchar_t* s, void*)
 	wcscpy_s(g_fileName,MAX_PATH,s);
 }
 
-void VDSendReopen(void* userData)
+void VDSendReopen(const wchar_t* fileName, void* userData)
 {
 	::HandleError("Reopen not implemented",userData);
 }
@@ -198,9 +198,9 @@ void VDSetFilename(wchar_t* s, void* userData)
 	g_context->mpCallbacks->SetFileName(s, L"AVIFile/Avisynth input driver (internal)", userData);
 }
 
-void VDSendReopen(void* userData)
+void VDSendReopen(const wchar_t* fileName, void* userData)
 {
-	g_context->mpCallbacks->Reopen(userData);
+	g_context->mpCallbacks->Reopen(fileName, 0, userData);
 }
 
 int64 VDRequestPos()
@@ -263,7 +263,7 @@ class ToolDriver: public vdxunknown<IVDXTool> {
 	}
 	virtual bool VDXAPIENTRY ExecuteMenu(int id, VDXHWND hwndParent) {
 		if (id==0) {
-			AVSEdit(NULL, (HWND)hwndParent, true);
+			OpenCurrentFile((HWND)hwndParent);
 			return true;
 		}
 		return false;
@@ -277,6 +277,9 @@ class ToolDriver: public vdxunknown<IVDXTool> {
 	}
 	virtual bool VDXAPIENTRY HandleFileOpen(const wchar_t* fileName, const wchar_t* driverName, VDXHWND hwndParent) {
 		return HandleFilename((HWND)hwndParent,fileName);
+	}
+	virtual bool VDXAPIENTRY HandleFileOpenError(const wchar_t* fileName, const wchar_t* driverName, VDXHWND hwndParent, const char* s, int source) {
+    return ::HandleFileOpenError((HWND)hwndParent,fileName,s,source);
 	}
 	virtual void VDXAPIENTRY Attach(VDXHWND hwndParent) {
 		AttachWindows((HWND)hwndParent);

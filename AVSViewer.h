@@ -49,8 +49,11 @@ int GetScriptType(const wchar_t *fn);
 void LoadAVSEditorIcons();
 ATOM RegisterAVSEditorClass();
 
-HWND AVSEdit(HWND, HWND, bool);
+class AVSEditor;
+AVSEditor* CreateEditor(HWND, HWND, bool);
+bool OpenCurrentFile(HWND parent);
 bool HandleFilename(HWND hwnd, const wchar_t* path);
+bool HandleFileOpenError(HWND hwnd, const wchar_t* path, const char* s, int source);
 bool ProcessDialogs(MSG& msg);
 bool ProcessHotkeys(MSG& msg);
 void HandleError(const char* s, void* userData);
